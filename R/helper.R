@@ -7,9 +7,11 @@
 #' @param steps_col Column name for step count. Default: "steps".
 #' @return A data.table with ordered accelerometry data.
 #' @export
-load_accelerometry_data <- function(filepath, id_col = "SEQN",
+load_accelerometry_data <- function(filepath,
+                                    id_col = "SEQN",
                                     day_col = "PAXDAYM",
-                                    min_col = "min_num", steps_col = "steps") {
+                                    min_col = "min_num",
+                                    steps_col = "steps") {
   dt_long <- fread(filepath, colClasses = list(SEQN = "character")) %>%
     as.data.table()
 
@@ -25,10 +27,18 @@ load_accelerometry_data <- function(filepath, id_col = "SEQN",
 #' @param steps_col Column name for step count. Default: "steps".
 #' @return A data.table with peak cadence metrics added.
 #' @export
-compute_peak_cadence <- function(dt, id_col = "SEQN", day_col = "PAXDAYM", steps_col = "steps") {
-  dt[, peak_1min := max(get(steps_col), na.rm = TRUE), by = .(get(id_col), get(day_col))]
-  dt[, peak_30min := mean(sort(get(steps_col), decreasing = TRUE)[1:30], na.rm = TRUE), by = .(get(id_col), get(day_col))]
-  dt[, peak_60min := mean(sort(get(steps_col), decreasing = TRUE)[1:60], na.rm = TRUE), by = .(get(id_col), get(day_col))]
+compute_peak_cadence <- function(dt,
+                                 id_col = "SEQN",
+                                 day_col = "PAXDAYM",
+                                 steps_col = "steps") {
+  dt[, peak_1min := max(get(steps_col), na.rm = TRUE),
+     by = .(get(id_col), get(day_col))]
+  dt[, peak_30min := mean(sort(get(steps_col), decreasing = TRUE)[1:30],
+                          na.rm = TRUE),
+     by = .(get(id_col), get(day_col))]
+  dt[, peak_60min := mean(sort(get(steps_col), decreasing = TRUE)[1:60],
+                          na.rm = TRUE),
+     by = .(get(id_col), get(day_col))]
   return(dt)
 }
 
@@ -39,18 +49,37 @@ compute_peak_cadence <- function(dt, id_col = "SEQN", day_col = "PAXDAYM", steps
 #' @return A list containing the updated data.table and a summary of cadence bands.
 #' @export
 compute_cadence_bands <- function(dt, steps_col = "steps") {
-  all_bands <- c("Zero", "Incidental", "Sporadic", "Purposeful", "Slow Walk",
-                 "Medium Walk", "Brisk Walk", "Fast Walk", "Very Fast Walk", "All-out")
+  all_bands <- c(
+    "Zero",
+    "Incidental",
+    "Sporadic",
+    "Purposeful",
+    "Slow Walk",
+    "Medium Walk",
+    "Brisk Walk",
+    "Fast Walk",
+    "Very Fast Walk",
+    "All-out"
+  )
 
-  dt[, cadence_band := cut(get(steps_col),
-                           breaks = c(0, 1, 19, 29, 49, 59, 79, 89, 99, 119, Inf),
-                           labels = all_bands,
-                           include.lowest = TRUE)]
+  dt[, cadence_band := cut(
+    get(steps_col),
+    breaks = c(0, 1, 19, 29, 49, 59, 79, 89, 99, 119, Inf),
+    labels = all_bands,
+    include.lowest = TRUE
+  )]
 
-  band_summary <- dcast(dt[, .N, by = .(SEQN, PAXDAYM, cadence_band)],
-                        SEQN + PAXDAYM ~ cadence_band, value.var = "N", fill = 0)
+  band_summary <- data.table::dcast(
+    dt[, .N, by = .(SEQN, PAXDAYM, cadence_band)],
+    SEQN + PAXDAYM ~ cadence_band,
+    value.var = "N",
+    fill = 0)
 
-  return(list(dt = dt, band_summary = band_summary, all_bands = all_bands))
+  return(list(
+    dt = dt,
+    band_summary = band_summary,
+    all_bands = all_bands
+  ))
 }
 
 #' @title Ensure All Cadence Bands Exist
@@ -76,7 +105,10 @@ ensure_all_cadence_bands <- function(band_summary, all_bands) {
 #' @param steps_col Column name for step count. Default: "steps".
 #' @return A data.table with maximum cadence metrics added.
 #' @export
-compute_max_cadence <- function(dt, id_col = "SEQN", day_col = "PAXDAYM", steps_col = "steps") {
+compute_max_cadence <- function(dt,
+                                id_col = "SEQN",
+                                day_col = "PAXDAYM",
+                                steps_col = "steps") {
   dt[, max_5min := max(frollmean(get(steps_col), 5, align = "center", fill = 0), na.rm = TRUE), by = .(get(id_col), get(day_col))]
   dt[, max_20min := max(frollmean(get(steps_col), 20, align = "center", fill = 0), na.rm = TRUE), by = .(get(id_col), get(day_col))]
   dt[, max_30min := max(frollmean(get(steps_col), 30, align = "center", fill = 0), na.rm = TRUE), by = .(get(id_col), get(day_col))]

@@ -1,14 +1,11 @@
-#' World Health Organization TB data
+#' Simulated NHANES Steps
 #'
-#' A subset of data from the World Health Organization Global Tuberculosis
-#' Report ...
-#'
-#' @format ## `who`
-#' A data frame with 7,240 rows and 60 columns:
+#' @format
+#' A data frame with 8640 rows and columns:
 #' \describe{
-#'   \item{country}{Country name}
-#'   \item{iso2, iso3}{2 & 3 letter ISO country codes}
-#'   \item{year}{Year}
-#'   ...
+#'   \item{SEQN}{Sequence Number/ID}
+#'   \item{PAXDAYM}{Day indicator (1 - first day)}
+#'   \item{min_num}{Minutes in integers}
+#'   \item{steps}{Numeric of number of steps}
 #' }
-#' @source <https://www.who.int/teams/global-tuberculosis-programme/data>
+"simulated_nhanes_steps"
