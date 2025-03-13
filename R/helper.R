@@ -7,7 +7,9 @@
 #' @param steps_col Column name for step count. Default: "steps".
 #' @return A data.table with ordered accelerometry data.
 #' @export
-load_accelerometry_data <- function(filepath, id_col = "SEQN", day_col = "PAXDAYM", min_col = "min_num", steps_col = "steps") {
+load_accelerometry_data <- function(filepath, id_col = "SEQN",
+                                    day_col = "PAXDAYM",
+                                    min_col = "min_num", steps_col = "steps") {
   dt_long <- fread(filepath, colClasses = list(SEQN = "character")) %>%
     as.data.table()
 
