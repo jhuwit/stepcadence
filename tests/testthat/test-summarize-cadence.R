@@ -1,12 +1,27 @@
-test_that("summarize_accelerometry runs well", {
+test_that("simulated_nhanes_steps check", {
 
   test_result <- summarize_cadence(simulated_nhanes_steps)
 
   print("Columns in test_result after function call:")
   print(names(test_result))  # Debugging step
 
-  expect_true(all(c("SEQN", "PAXDAYM", "min_num", "steps") %in% names(test_result)),
+  expect_true(all(c("SEQN", "PAXDAYM", "min_num", "steps") %in% colnames(simulated_nhanes_steps)),
               info = "Some expected columns are missing in test_result.")
+})
+
+test_that("summarize_cadence check", {
+
+  test_result <- summarize_cadence(simulated_nhanes_steps)
+
+  expect_named(
+    test_result,
+    c("SEQN", "PAXDAYM", "peak_1min", "peak_30min", "peak_60min",
+      "moderate_cadence", "high_cadence", "max_5min", "max_20min",
+      "max_30min", "max_60min", "Zero", "Incidental", "Sporadic", "Purposeful",
+      "Slow Walk", "Very Fast Walk", "All-out", "Medium Walk", "Brisk Walk",
+      "Fast Walk"),
+    ignore.order = TRUE,
+    info = "Some expected columns are missing in test_result.")
 })
 
 test_that("summarize_accelerometry produces expected results", {

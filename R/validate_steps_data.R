@@ -1,5 +1,5 @@
-validate_steps_data = function(df, columns = c("time", "steps", "walking", "ac"),
-                         check_minute = FALSE) {
+validate_steps_data = function(df, columns = c("time", "steps", "walking"),
+                               check_minute = FALSE) {
   if (!is.data.frame(df)) {
     stop("Input must be a data frame.")
   }
@@ -48,6 +48,8 @@ validate_steps_data = function(df, columns = c("time", "steps", "walking", "ac")
     }
   }
 
-
+  if (!data.table::is.data.table(df)) {
+    df = df %>% data.table::setDT()
+  }
   return(TRUE)
 }
