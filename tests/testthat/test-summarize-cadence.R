@@ -1,5 +1,7 @@
 test_that("summarize_accelerometry runs well", {
   test_data_path <- here::here("tests", "data", "test_cadence_data.csv.xz")
+  ## Load data
+
   test_result <- summarize_cadence(test_data_path)
 
   print("Columns in test_result after function call:")

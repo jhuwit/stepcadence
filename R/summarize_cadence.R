@@ -3,6 +3,8 @@
 #' @param filepath File path to the accelerometry dataset.
 #' @return A summarized data.table with cadence metrics.
 #' @examples summarize_cadence("path/to/file.csv.xz")
+#' @import data.table
+#' @import tidyverse
 #' @export
 summarize_cadence <- function(filepath) {
   dt_long <- load_accelerometry_data(filepath) %>% setDT()
