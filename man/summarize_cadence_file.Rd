@@ -7,10 +7,12 @@
 \usage{
 summarize_cadence_file(filepath)
 
-summarize_cadence(dt_long)
+summarize_cadence(df)
 }
 \arguments{
 \item{filepath}{File path to the accelerometry dataset.}
+
+\item{df}{data frame of accelerometry data}
 }
 \value{
 A summarized data.table with cadence metrics.
@@ -19,5 +21,7 @@ A summarized data.table with cadence metrics.
 Calls all helper functions to compute cadence metrics and summarize results.
 }
 \examples{
+\dontrun{
 summarize_cadence("path/to/file.csv.xz")
+}
 }

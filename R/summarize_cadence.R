@@ -2,7 +2,10 @@
 #' @description Calls all helper functions to compute cadence metrics and summarize results.
 #' @param filepath File path to the accelerometry dataset.
 #' @return A summarized data.table with cadence metrics.
-#' @examples summarize_cadence("path/to/file.csv.xz")
+#' @examples
+#' \dontrun{
+#' summarize_cadence("path/to/file.csv.xz")
+#' }
 #' @export
 summarize_cadence_file <- function(filepath) {
   dt_long <- load_accelerometry_data(filepath) %>% setDT()
@@ -13,7 +16,9 @@ summarize_cadence_file <- function(filepath) {
 
 #' @export
 #' @rdname summarize_cadence_file
-summarize_cadence <- function(dt_long) {
+#' @param df data frame of accelerometry data
+summarize_cadence <- function(df) {
+  dt_long = df
   # validate_steps_data(dt_long)
   dt_long <- compute_peak_cadence(dt_long) %>% setDT()
   dt_long <- compute_max_cadence(dt_long) %>% setDT()
@@ -21,6 +26,7 @@ summarize_cadence <- function(dt_long) {
   band_results <- compute_cadence_bands(dt_long)
   band_summary <- ensure_all_cadence_bands(band_results$band_summary, band_results$all_bands)
 
+  # this is NHANES stuff
   dt_long[, moderate_cadence := sum(steps >= 60 & steps < 120, na.rm = TRUE), by = .(SEQN, PAXDAYM)]
   dt_long[, high_cadence := sum(steps >= 120, na.rm = TRUE), by = .(SEQN, PAXDAYM)]
 
