@@ -12,9 +12,12 @@ load_accelerometry_data <- function(filepath,
                                     day_col = "PAXDAYM",
                                     min_col = "min_num",
                                     steps_col = "steps") {
-  dt_long <- fread(filepath, colClasses = list(SEQN = "character")) %>%
-    as.data.table()
+  ..id_col = ..day_col = ..min_col = NULL
+  rm(list = c("..id_col", "..day_col", "..min_col"))
+  dt_long <- data.table::fread(filepath,
+                               colClasses = list(SEQN = "character")) %>%
+    data.table::as.data.table()
 
-  setorder(dt_long, ..id_col, ..day_col, ..min_col)
+  data.table::setorder(dt_long, ..id_col, ..day_col, ..min_col)
   return(dt_long)
 }

@@ -30,7 +30,7 @@ for (subject in 1:n_subjects) {
     dt <- data.table(
       SEQN = paste0("ID_", subject),
       PAXDAYM = day,
-      min_num = 1:n_minutes,
+      time = 1:n_minutes,
       steps = steps
     )
 

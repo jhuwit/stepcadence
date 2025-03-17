@@ -1,21 +1,27 @@
 Package: rnhanescadence
-Title: Computes cadence metrics from NHANES step count data
-Version: 0.0.0.9000
+Title: Computes Cadence Metrics from Step Count Data
+Version: 0.1.0
 Authors@R: 
-    person("Angela", "Zhao", , "azhaowork@gmail.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    c(
+    person("Angela", "Zhao", , "azhaowork@gmail.com", role = c("aut", "cre")),
+    person("John", "Muschelli", , "muschellij2@gmail.com", role = c("aut"))
+    )
+Description: Calculates cadence metrics on step-level data.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Suggests: 
+    janitor,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
     assertthat,
     data.table,
     dplyr,
-    lubridate
+    lubridate,
+    magrittr,
+    tidyr
 Depends: 
     R (>= 3.5)
 LazyData: true

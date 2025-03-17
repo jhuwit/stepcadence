@@ -3,14 +3,21 @@
 \name{summarize_cadence_file}
 \alias{summarize_cadence_file}
 \alias{summarize_cadence}
+\alias{summarise_cadence}
 \title{Summarize Step Data}
 \usage{
-summarize_cadence_file(filepath)
+summarize_cadence_file(file, ..., group_cols = c("SEQN", "PAXDAYM"))
 
-summarize_cadence(df)
+summarize_cadence(df, group_cols = c("SEQN", "PAXDAYM"))
+
+summarise_cadence(df, group_cols = c("SEQN", "PAXDAYM"))
 }
 \arguments{
-\item{filepath}{File path to the accelerometry dataset.}
+\item{file}{File path to the accelerometry dataset.}
+
+\item{...}{additional arguments to pass to \code{\link[=load_accelerometry_data]{load_accelerometry_data()}}}
+
+\item{group_cols}{columns to group the data by before computing cadence metrics}
 
 \item{df}{data frame of accelerometry data}
 }

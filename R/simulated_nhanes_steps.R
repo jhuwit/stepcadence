@@ -5,7 +5,7 @@
 #' \describe{
 #'   \item{SEQN}{Sequence Number/ID}
 #'   \item{PAXDAYM}{Day indicator (1 - first day)}
-#'   \item{min_num}{Minutes in integers}
+#'   \item{time}{Minutes in integers}
 #'   \item{steps}{Numeric of number of steps}
 #' }
 "simulated_nhanes_steps"
