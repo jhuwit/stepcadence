@@ -149,11 +149,13 @@ compute_cadence_mean <- function(df,
       all(df$counts > 0, na.rm = TRUE),
     )
     df = df %>%
+      dplyr::ungroup() %>%
       dplyr::mutate(steps_censored = dplyr::if_else(counts < counts_threshold,
                                                     NA, steps)
       )
   } else {
     df = df %>%
+      dplyr::ungroup() %>%
       dplyr::mutate(steps_censored = NA)
   }
 
