@@ -110,3 +110,76 @@ compute_cadence_max <- function(df,
 
   return(df)
 }
+
+
+
+
+
+#' @note
+#' For cadence means using `compute_cadence_mean`, the columns
+#' `wear` are necessary and `counts` are optional.  If `counts`
+#' not available, then censored means are not reported.
+#' @param counts_threshold Threshold for censoring steps, such that
+#' steps where counts less than this threshold is not counted.
+#'
+#' @export
+#' @rdname compute_cadence_peak
+compute_cadence_mean <- function(df,
+                                 group_cols = c("SEQN", "PAXDAYM"),
+                                 counts_threshold = 500
+) {
+  # issues with no symbol in the environment
+  counts = n_minutes = n_steps_censored = n_steps = steps = NULL
+  mean_uncensored_cadence = mean_censored_cadence = NULL
+  steps_censored = wear = NULL
+  rm(list = c("steps", "n_steps",
+              "n_steps_censored", "n_minutes", "counts",
+              "mean_uncensored_cadence", "mean_censored_cadence",
+              "steps_censored", "wear"))
+  validate_steps_data(df = df,
+                      columns = c("time", "steps", "wear", group_cols),
+                      check_minute = TRUE,
+                      group_cols = group_cols)
+  assertthat::assert_that(
+    is.logical(df$wear) |
+      all(stats::na.omit(unique(df$wear)) %in% c(0, 1))
+  )
+  if (assertthat::has_name(df, "counts")) {
+    assertthat::assert_that(
+      all(df$counts > 0, na.rm = TRUE),
+    )
+    df = df %>%
+      dplyr::mutate(steps_censored = dplyr::if_else(counts < counts_threshold,
+                                                    NA, steps)
+      )
+  } else {
+    df = df %>%
+      dplyr::mutate(steps_censored = NA)
+  }
+
+  df = df %>%
+    group_string_cols(group_cols) %>%
+    dplyr::summarise(
+      n_minutes = sum(wear > 0, na.rm = TRUE),
+      n_steps = sum(steps, na.rm = TRUE),
+      n_steps_censored = sum(steps_censored, na.rm = TRUE),
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      mean_uncensored_cadence = n_steps / n_minutes,
+      mean_uncensored_cadence = dplyr::if_else(
+        is.infinite(mean_uncensored_cadence),
+        NA, mean_uncensored_cadence),
+
+      mean_censored_cadence = n_steps_censored / n_minutes,
+      mean_censored_cadence = dplyr::if_else(
+        is.infinite(mean_censored_cadence),
+        NA, mean_censored_cadence)
+    ) %>%
+    dplyr::select(-n_steps, -n_minutes, -n_steps_censored)
+
+  if (assertthat::has_name(df, "counts")) {
+
+  }
+  return(df)
+}
