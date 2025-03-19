@@ -30,7 +30,7 @@ for (subject in 1:n_subjects) {
     dt <- data.table(
       SEQN = paste0("ID_", subject),
       PAXDAYM = day,
-      min_num = 1:n_minutes,
+      time = 1:n_minutes,
       steps = steps
     )
 
@@ -41,8 +41,8 @@ for (subject in 1:n_subjects) {
 # Combine all test data
 test_data <- rbindlist(test_data_list)
 
-# Save test dataset to file
-write_csv(test_data, file = xzfile("test_cadence_data.csv.xz"))
+simulated_nhanes_steps = test_data
+usethis::use_data(simulated_nhanes_steps, overwrite = TRUE)
 
-# Display sample of test dataset
-print(head(test_data, 20))
+fname = here::here("tests/testthat/testdata/test_cadence_data.csv.xz")
+readr::write_csv(test_data, file = xzfile(fname))

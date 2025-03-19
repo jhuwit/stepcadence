@@ -1,3 +1,6 @@
 ^LICENSE\.md$
 ^rnhanescadence\.Rproj$
 ^\.Rproj\.user$
+^data-raw$
+^\.github$
+^README\.Rmd$
