@@ -8,7 +8,11 @@
 \usage{
 compute_cadence_peak(df, group_cols = c("SEQN", "PAXDAYM"))
 
-compute_cadence_level(df, group_cols = c("SEQN", "PAXDAYM"))
+compute_cadence_level(
+  df,
+  group_cols = c("SEQN", "PAXDAYM"),
+  step_thresholds = c(60, 120)
+)
 
 compute_cadence_max(df, group_cols = c("SEQN", "PAXDAYM"))
 }
@@ -17,6 +21,10 @@ compute_cadence_max(df, group_cols = c("SEQN", "PAXDAYM"))
 \code{time} and \code{steps}.}
 
 \item{group_cols}{columns to group the data by before computing cadence metrics}
+
+\item{step_thresholds}{a vector of two unique values to define the cadence
+bands for moderate and high.  0 to first threshold is always
+set for low and above the second threshold is always set for high.}
 }
 \value{
 A data.table with peak cadence metrics added.
