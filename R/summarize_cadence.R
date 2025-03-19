@@ -23,13 +23,18 @@ summarize_cadence_file <- function(
 #' @export
 #' @rdname summarize_cadence_file
 #' @param df data frame of accelerometry data
+#' @param step_thresholds a vector of two unique values to define the cadence
+#' bands for moderate and high.  0 to first threshold is always
+#' set for low and above the second threshold is always set for high.
 summarize_cadence <- function(df,
-                              group_cols = c("SEQN", "PAXDAYM")
+                              group_cols = c("SEQN", "PAXDAYM"),
+                              step_thresholds = c(60, 120)
 ) {
   peak <- compute_cadence_peak(df, group_cols = group_cols)
   max <- compute_cadence_max(df, group_cols = group_cols)
 
-  levels = compute_cadence_level(df, group_cols = group_cols)
+  levels = compute_cadence_level(df, group_cols = group_cols,
+                                 step_thresholds = step_thresholds)
 
   bands = compute_cadence_bands(df)
   bands = summarize_cadence_bands(bands, group_cols = group_cols)
