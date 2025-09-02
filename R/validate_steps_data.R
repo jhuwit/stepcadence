@@ -1,5 +1,5 @@
 validate_steps_data = function(df,
-                               columns = c("time", "steps", "walking"),
+                               columns = c("time", "steps", "walking", "cadence"),
                                check_minute = FALSE,
                                group_cols = NULL) {
   if (!is.data.frame(df)) {
@@ -11,10 +11,25 @@ validate_steps_data = function(df,
     stop(paste("Missing required columns:", paste(missing_columns, collapse = ", ")))
   }
 
-  assertthat::assert_that(
-    is.numeric(df$steps),
-    msg = "Steps must be a numeric vector with non-negative values."
-  )
+  if ("steps" %in% columns) {
+    assertthat::assert_that(
+      is.numeric(df$steps),
+      msg = "Steps must be a numeric vector with non-negative values."
+    )
+  }
+
+  if ("walking" %in% columns) {
+    if(!all(is.na(df$time)) | !all(df$time == FALSE)) {
+      stop("No walking flags are true.")
+    }
+  }
+
+  if ("cadence" %in% columns) {
+    assertthat::assert_that(
+      is.numeric(df$cadence),
+      msg = "Cadence must be a numeric vector with non-negative values."
+    )
+  }
 
   if ("time" %in% columns) {
     assertthat::assert_that(
