@@ -2,7 +2,7 @@
 #' @title Compute Peak Cadence Metrics
 #' @description Computes 1-minute, 30-minute, and 60-minute peak cadence metrics.
 #' @param df A `data.frame` of data, which must have the columns of
-#' `time` and `steps`.
+#' `time` and `cadence`.
 #' @param group_cols columns to group the data by before computing cadence metrics
 #' @return A data.table with peak cadence metrics added.
 #' @export
@@ -10,13 +10,13 @@ compute_cadence_peak <- function(df,
                                  group_cols = c("SEQN", "PAXDAYM")
 ) {
   # issues with no symbol in the environment
-  steps = NULL
-  rm(list = c("steps"))
+  cadence = NULL
+  rm(list = c("cadence"))
   assertthat::assert_that(
-    assertthat::has_name(df, "steps")
+    assertthat::has_name(df, "cadence")
   )
   validate_steps_data(df = df,
-                      columns = c("time", "steps", group_cols),
+                      columns = c("time", "cadence", group_cols),
                       check_minute = TRUE,
                       group_cols = group_cols)
 
@@ -28,9 +28,9 @@ compute_cadence_peak <- function(df,
     group_string_cols(group_cols) %>%
     dplyr::summarise(
       # NEED CHECK FOR 1 minute times
-      peak_1min = max(steps, na.rm = TRUE),
-      peak_30min = mean(get_top(steps, 30L), na.rm = TRUE),
-      peak_60min = mean(get_top(steps, 60L), na.rm = TRUE),
+      peak_1min = max(cadence, na.rm = TRUE),
+      peak_30min = mean(get_top(cadence, 30L), na.rm = TRUE),
+      peak_60min = mean(get_top(cadence, 60L), na.rm = TRUE),
     ) %>%
     dplyr::ungroup()
   return(df)
@@ -46,17 +46,17 @@ compute_cadence_level <- function(df,
   n_in_cadence_band = cadence = n = steps = NULL
   rm(list = c("n_in_cadence_band", "cadence", "n", "steps"))
   assertthat::assert_that(
-    assertthat::has_name(df, "steps")
+    assertthat::has_name(df, "cadence")
   )
   validate_steps_data(df = df,
-                      columns = c("time", "steps", group_cols),
+                      columns = c("time", "cadence", group_cols),
                       check_minute = TRUE,
                       group_cols = group_cols)
 
   df = df %>%
     dplyr::ungroup() %>%
     dplyr::mutate(
-      cadence = cut(steps, breaks = c(0, 60, 120, Inf),
+      cadence = cut(cadence, breaks = c(0, 60, 120, Inf),
                     include.lowest = TRUE,
                     right = FALSE,
                     labels = paste0(c("low", "moderate", "high"), "_cadence")
@@ -82,13 +82,13 @@ compute_cadence_max <- function(df,
                                 group_cols = c("SEQN", "PAXDAYM")
 ) {
   # issues with no symbol in the environment
-  steps = NULL
-  rm(list = c("steps"))
+  cadence = NULL
+  rm(list = c("cadence"))
   assertthat::assert_that(
-    assertthat::has_name(df, "steps")
+    assertthat::has_name(df, "cadence")
   )
   validate_steps_data(df = df,
-                      columns = c("time", "steps", group_cols),
+                      columns = c("time", "cadence", group_cols),
                       check_minute = TRUE,
                       group_cols = group_cols)
 
@@ -101,10 +101,10 @@ compute_cadence_max <- function(df,
     group_string_cols(group_cols) %>%
     dplyr::summarise(
       # NEED CHECK FOR 1 minute times
-      max_5min = roll_data(steps, 5L),
-      max_20min = roll_data(steps, 20L),
-      max_30min = roll_data(steps, 30L),
-      max_60min = roll_data(steps, 60L)
+      max_5min = roll_data(cadence, 5L),
+      max_20min = roll_data(cadence, 20L),
+      max_30min = roll_data(cadence, 30L),
+      max_60min = roll_data(cadence, 60L)
     ) %>%
     dplyr::ungroup()
 

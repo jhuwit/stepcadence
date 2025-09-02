@@ -7,5 +7,6 @@
 #'   \item{PAXDAYM}{Day indicator (1 - first day)}
 #'   \item{time}{Minutes in integers}
 #'   \item{steps}{Numeric of number of steps}
+#'   \item{cadence}{Numeric of steps/min during walking}
 #' }
 "simulated_nhanes_steps"

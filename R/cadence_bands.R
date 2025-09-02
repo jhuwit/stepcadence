@@ -1,14 +1,14 @@
 
 #' @title Compute Cadence Bands
-#' @description Categorizes steps per minute into cadence bands.
+#' @description Categorizes cadence into cadence bands.
 #' @param df A `data.frame` of data, which must have the columns of
-#' `time` and `steps`.
+#' `time` and `cadence`.
 #' @param group_cols columns to group the data by before computing cadence metrics
 #' @return A list containing the updated data.table and a summary of cadence bands.
 #' @export
 compute_cadence_bands <- function(df, ...) {
-  steps = NULL
-  rm(list = c("steps"))
+  cadence = NULL
+  rm(list = c("cadence"))
   # all_bands <- c(
   #   "Zero",
   #   "Incidental",
@@ -26,10 +26,10 @@ compute_cadence_bands <- function(df, ...) {
   )
 
   assertthat::assert_that(
-    assertthat::has_name(df, "steps")
+    assertthat::has_name(df, "cadence")
   )
   validate_steps_data(df = df,
-                      columns = c("steps"),
+                      columns = c("cadence"),
                       check_minute = FALSE)
   gv = dplyr::group_vars(df)
   df = df %>%
@@ -37,7 +37,7 @@ compute_cadence_bands <- function(df, ...) {
     dplyr::ungroup() %>%
     dplyr::mutate(
       cadence_band = cut(
-        steps,
+        cadence,
         breaks = c(0, 1, 19, 29, 49, 59, 79, 89, 99, 119, Inf),
         labels = all_bands,
         include.lowest = TRUE
