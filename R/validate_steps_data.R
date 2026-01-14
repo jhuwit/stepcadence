@@ -76,8 +76,26 @@ validate_steps_data = function(df,
     }
   }
 
-  if (!data.table::is.data.table(df)) {
-    df = df %>% data.table::setDT()
-  }
+  # if (!data.table::is.data.table(df)) {
+  #   df = df %>% data.table::setDT()
+  # }
   return(TRUE)
+}
+
+
+mask_nonwear_steps = function(df) {
+  wear = steps = NULL
+  rm(list = c("wear", "steps"))
+  if (!assertthat::has_name(df, "wear")) {
+    return(df)
+  }
+  assertthat::assert_that(
+    is.logical(df$wear) |
+      all(stats::na.omit(unique(df$wear)) %in% c(0, 1))
+  )
+  df = df %>%
+    dplyr::mutate(wear = wear > 0)
+  df = df %>%
+    dplyr::mutate(steps = dplyr::if_else(wear, steps, NA_real_))
+  df
 }
