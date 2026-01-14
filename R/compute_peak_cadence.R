@@ -43,8 +43,8 @@ compute_cadence_peak <- function(df,
 #' bands for moderate and high.  0 to first threshold is always
 #' set for low and above the second threshold is always set for high.
 compute_cadence_level <- function(df,
-                                 group_cols = c("SEQN", "PAXDAYM"),
-                                 step_thresholds = c(60, 120)
+                                  group_cols = c("SEQN", "PAXDAYM"),
+                                  step_thresholds = c(60, 120)
 ) {
   # issues with no symbol in the environment
   n_in_cadence_band = cadence = n = steps = NULL
