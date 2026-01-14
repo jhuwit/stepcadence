@@ -41,7 +41,7 @@ test_that("validate_steps_data cases are bad", {
                   time = lubridate::as_date("2000-01-01") + lubridate::as.period(time, unit = "minutes")
     )
   # this may not work yet - need to fix validation
-  # compute_cadence_peak(df)
+  compute_cadence_peak(df)
 
 
 })

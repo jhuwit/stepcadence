@@ -59,7 +59,8 @@ validate_steps_data = function(df,
     if (check_minute) {
       if (lubridate::is.POSIXt(df$time)) {
         assertthat::assert_that(
-          all(time_diff == lubridate::period(1, "minutes")),
+          all(time_diff == lubridate::period(1, "minutes")) ||
+            all(time_diff == 1L),
           msg = "Time values must be in 1-minute intervals."
         )
       } else {
