@@ -8,9 +8,17 @@
 \usage{
 summarize_cadence_file(file, ..., group_cols = c("SEQN", "PAXDAYM"))
 
-summarize_cadence(df, group_cols = c("SEQN", "PAXDAYM"))
+summarize_cadence(
+  df,
+  group_cols = c("SEQN", "PAXDAYM"),
+  step_thresholds = c(60, 120)
+)
 
-summarise_cadence(df, group_cols = c("SEQN", "PAXDAYM"))
+summarise_cadence(
+  df,
+  group_cols = c("SEQN", "PAXDAYM"),
+  step_thresholds = c(60, 120)
+)
 }
 \arguments{
 \item{file}{File path to the accelerometry dataset.}
@@ -20,6 +28,10 @@ summarise_cadence(df, group_cols = c("SEQN", "PAXDAYM"))
 \item{group_cols}{columns to group the data by before computing cadence metrics}
 
 \item{df}{data frame of accelerometry data}
+
+\item{step_thresholds}{a vector of two unique values to define the cadence
+bands for moderate and high.  0 to first threshold is always
+set for low and above the second threshold is always set for high.}
 }
 \value{
 A summarized data.table with cadence metrics.

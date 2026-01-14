@@ -39,14 +39,23 @@ compute_cadence_peak <- function(df,
 
 #' @export
 #' @rdname compute_cadence_peak
+#' @param step_thresholds a vector of two unique values to define the cadence
+#' bands for moderate and high.  0 to first threshold is always
+#' set for low and above the second threshold is always set for high.
 compute_cadence_level <- function(df,
-                                 group_cols = c("SEQN", "PAXDAYM")
+                                 group_cols = c("SEQN", "PAXDAYM"),
+                                 step_thresholds = c(60, 120)
 ) {
   # issues with no symbol in the environment
   n_in_cadence_band = cadence = n = steps = NULL
   rm(list = c("n_in_cadence_band", "cadence", "n", "steps"))
   assertthat::assert_that(
     assertthat::has_name(df, "steps")
+  )
+  assertthat::assert_that(
+    !anyNA(step_thresholds),
+    length(step_thresholds) == 2L,
+    length(unique(step_thresholds)) == 2L
   )
   validate_steps_data(df = df,
                       columns = c("time", "steps", group_cols),
@@ -56,7 +65,7 @@ compute_cadence_level <- function(df,
   df = df %>%
     dplyr::ungroup() %>%
     dplyr::mutate(
-      cadence = cut(steps, breaks = c(0, 60, 120, Inf),
+      cadence = cut(steps, breaks = c(0, step_thresholds, Inf),
                     include.lowest = TRUE,
                     right = FALSE,
                     labels = paste0(c("low", "moderate", "high"), "_cadence")
