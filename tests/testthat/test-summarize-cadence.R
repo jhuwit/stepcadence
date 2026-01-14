@@ -26,6 +26,24 @@ test_that("summarize_cadence check", {
     ignore.order = TRUE)
 })
 
+test_that("ensure_all_cadence_bands adding in fake band", {
+
+  test_result <- summarize_cadence(simulated_nhanes_steps)
+
+  test_result = ensure_all_cadence_bands(test_result, "running_for_your_life")
+  expected_cols =
+    c("SEQN", "PAXDAYM", "peak_1min", "peak_30min", "peak_60min",
+      "n_minutes", "n_minutes_wear", "mean_uncensored_cadence", "mean_censored_cadence",
+      "max_5min", "max_20min", "max_30min", "max_60min", "low_cadence",
+      "moderate_cadence", "high_cadence", "zero", "incidental", "sporadic",
+      "purposeful", "slow_walk", "medium_walk", "brisk_walk", "fast_walk",
+      "very_fast_walk", "all_out", "running_for_your_life")
+  expect_named(
+    test_result,
+    expected = expected_cols,
+    ignore.order = TRUE)
+})
+
 test_that("summarize_accelerometry produces expected results", {
   testthat::skip_if_not_installed("janitor")
   # File paths (update if running in a different environment)

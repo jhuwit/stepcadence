@@ -95,6 +95,7 @@ summarise_cadence_bands = summarize_cadence_bands
 #' @param band_summary Data.table with cadence band counts.
 #' @param all_bands Vector of all expected cadence bands.
 #' @return A data.table with all cadence bands present.
+#' @export
 ensure_all_cadence_bands <- function(band_summary, all_bands) {
   for (band in all_bands) {
     if (!(band %in% names(band_summary))) {
