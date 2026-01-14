@@ -45,3 +45,16 @@ test_that("validate_steps_data cases are bad", {
 
 
 })
+
+
+test_that("validate_steps_data gives warning if checking minutes but time missing", {
+
+  df = simulated_nhanes_steps %>%
+    dplyr::select(-time)
+  # warning you want to check minutes but time is not required
+  testthat::expect_warning({
+    validate_steps_data(df, check_minute = TRUE,
+                        columns = "steps")
+  })
+
+})
