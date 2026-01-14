@@ -11,10 +11,14 @@ validate_steps_data = function(df,
     stop(paste("Missing required columns:", paste(missing_columns, collapse = ", ")))
   }
 
-  assertthat::assert_that(
-    is.numeric(df$steps),
-    msg = "Steps must be a numeric vector with non-negative values."
-  )
+
+  if ("steps" %in% columns) {
+    assertthat::assert_that(
+      is.numeric(df$steps),
+      all(df$steps >= 0, na.rm = TRUE),
+      msg = "Steps must be a numeric vector with non-negative values."
+    )
+  }
 
   if ("time" %in% columns) {
     assertthat::assert_that(

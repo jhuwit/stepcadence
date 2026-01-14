@@ -4,6 +4,7 @@
 \alias{compute_cadence_peak}
 \alias{compute_cadence_level}
 \alias{compute_cadence_max}
+\alias{compute_cadence_mean}
 \title{Compute Peak Cadence Metrics}
 \usage{
 compute_cadence_peak(df, group_cols = c("SEQN", "PAXDAYM"))
@@ -15,6 +16,12 @@ compute_cadence_level(
 )
 
 compute_cadence_max(df, group_cols = c("SEQN", "PAXDAYM"))
+
+compute_cadence_mean(
+  df,
+  group_cols = c("SEQN", "PAXDAYM"),
+  counts_threshold = 500
+)
 }
 \arguments{
 \item{df}{A \code{data.frame} of data, which must have the columns of
@@ -25,10 +32,18 @@ compute_cadence_max(df, group_cols = c("SEQN", "PAXDAYM"))
 \item{step_thresholds}{a vector of two unique values to define the cadence
 bands for moderate and high.  0 to first threshold is always
 set for low and above the second threshold is always set for high.}
+
+\item{counts_threshold}{Threshold for censoring steps, such that
+steps where counts less than this threshold is not counted.}
 }
 \value{
 A data.table with peak cadence metrics added.
 }
 \description{
 Computes 1-minute, 30-minute, and 60-minute peak cadence metrics.
+}
+\note{
+For cadence means using \code{compute_cadence_mean}, the columns
+\code{wear} are necessary and \code{counts} are optional.  If \code{counts}
+not available, then censored means are not reported.
 }
