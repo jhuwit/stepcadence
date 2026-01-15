@@ -2,48 +2,24 @@
 % Please edit documentation in R/compute_peak_cadence.R
 \name{compute_cadence_peak}
 \alias{compute_cadence_peak}
-\alias{compute_cadence_level}
-\alias{compute_cadence_max}
-\alias{compute_cadence_mean}
 \title{Compute Peak Cadence Metrics}
 \usage{
-compute_cadence_peak(df, group_cols = c("SEQN", "PAXDAYM"))
-
-compute_cadence_level(
-  df,
-  group_cols = c("SEQN", "PAXDAYM"),
-  step_thresholds = c(60, 120)
-)
-
-compute_cadence_max(df, group_cols = c("SEQN", "PAXDAYM"))
-
-compute_cadence_mean(
-  df,
-  group_cols = c("SEQN", "PAXDAYM"),
-  counts_threshold = 500
-)
+compute_cadence_peak(df, mask_wear = FALSE, group_cols = c("SEQN", "PAXDAYM"))
 }
 \arguments{
 \item{df}{A \code{data.frame} of data, which must have the columns of
-\code{time} and \code{steps}.}
+\code{time} and \code{steps}.  If \code{group_cols} added, they must be included in the data
+as well.  If \code{mask_wear = TRUE}, the \code{wear} column must also be included, which
+should be a logical indicator of wear (\code{TRUE}) or non-wear (\code{FALSE}) or
+a flag of 0/1}
 
-\item{group_cols}{columns to group the data by before computing cadence metrics}
+\item{mask_wear}{if \code{TRUE}, then steps that are non-wear will be set to \code{NA}.}
 
-\item{step_thresholds}{a vector of two unique values to define the cadence
-bands for moderate and high.  0 to first threshold is always
-set for low and above the second threshold is always set for high.}
-
-\item{counts_threshold}{Threshold for censoring steps, such that
-steps where counts less than this threshold is not counted.}
+\item{group_cols}{columns to group the data by before computing metrics}
 }
 \value{
 A data.table with peak cadence metrics added.
 }
 \description{
 Computes 1-minute, 30-minute, and 60-minute peak cadence metrics.
-}
-\note{
-For cadence means using \code{compute_cadence_mean}, the columns
-\code{wear} are necessary and \code{counts} are optional.  If \code{counts}
-not available, then censored means are not reported.
 }

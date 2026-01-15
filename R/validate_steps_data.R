@@ -59,7 +59,8 @@ validate_steps_data = function(df,
     if (check_minute) {
       if (lubridate::is.POSIXt(df$time)) {
         assertthat::assert_that(
-          all(time_diff == lubridate::period(1, "minutes")),
+          all(time_diff == lubridate::period(1, "minutes")) ||
+            all(time_diff == 1L),
           msg = "Time values must be in 1-minute intervals."
         )
       } else {
@@ -76,8 +77,26 @@ validate_steps_data = function(df,
     }
   }
 
-  if (!data.table::is.data.table(df)) {
-    df = df %>% data.table::setDT()
-  }
+  # if (!data.table::is.data.table(df)) {
+  #   df = df %>% data.table::setDT()
+  # }
   return(TRUE)
+}
+
+
+mask_nonwear_steps = function(df) {
+  wear = steps = NULL
+  rm(list = c("wear", "steps"))
+  if (!assertthat::has_name(df, "wear")) {
+    return(df)
+  }
+  assertthat::assert_that(
+    is.logical(df$wear) |
+      all(stats::na.omit(unique(df$wear)) %in% c(0, 1))
+  )
+  df = df %>%
+    dplyr::mutate(wear = wear > 0)
+  df = df %>%
+    dplyr::mutate(steps = dplyr::if_else(wear, steps, NA_real_))
+  df
 }

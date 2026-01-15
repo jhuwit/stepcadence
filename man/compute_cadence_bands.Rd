@@ -6,7 +6,7 @@
 \alias{summarise_cadence_bands}
 \title{Compute Cadence Bands}
 \usage{
-compute_cadence_bands(df, ...)
+compute_cadence_bands(df, mask_wear = FALSE)
 
 summarize_cadence_bands(df, group_cols = c("SEQN", "PAXDAYM"))
 
@@ -14,12 +14,14 @@ summarise_cadence_bands(df, group_cols = c("SEQN", "PAXDAYM"))
 }
 \arguments{
 \item{df}{A \code{data.frame} of data, which must have the columns of
-\code{time} and \code{steps}.}
+\code{time} and \code{steps}.  If \code{group_cols} added, they must be included in the data
+as well.  If \code{mask_wear = TRUE}, the \code{wear} column must also be included, which
+should be a logical indicator of wear (\code{TRUE}) or non-wear (\code{FALSE}) or
+a flag of 0/1}
 
-\item{...}{additional arguments to pass to \code{\link[dplyr:count]{dplyr::count()}} for
-summarizing cadence bands}
+\item{mask_wear}{if \code{TRUE}, then steps that are non-wear will be set to \code{NA}.}
 
-\item{group_cols}{columns to group the data by before computing cadence metrics}
+\item{group_cols}{columns to group the data by before computing metrics}
 }
 \value{
 A list containing the updated data.table and a summary of cadence bands.

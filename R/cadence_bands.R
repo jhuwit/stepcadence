@@ -1,12 +1,12 @@
 
 #' @title Compute Cadence Bands
 #' @description Categorizes steps per minute into cadence bands.
-#' @param df A `data.frame` of data, which must have the columns of
-#' `time` and `steps`.
-#' @param group_cols columns to group the data by before computing cadence metrics
-#' @return A list containing the updated data.table and a summary of cadence bands.
+#' @inheritParams compute_cadence_peak
 #' @export
-compute_cadence_bands <- function(df, ...) {
+#' @return A list containing the updated data.table and a summary of cadence bands.
+compute_cadence_bands <- function(df,
+                                  mask_wear = FALSE
+                                  ) {
   steps = NULL
   rm(list = c("steps"))
   # all_bands <- c(
@@ -31,6 +31,10 @@ compute_cadence_bands <- function(df, ...) {
   validate_steps_data(df = df,
                       columns = c("steps"),
                       check_minute = FALSE)
+  if (mask_wear) {
+    df = df %>%
+      mask_nonwear_steps()
+  }
   gv = dplyr::group_vars(df)
   df = df %>%
     # ungroup for speed
@@ -55,12 +59,11 @@ compute_cadence_bands <- function(df, ...) {
   df
 }
 
-#' @param ... additional arguments to pass to [dplyr::count()] for
-#' summarizing cadence bands
 #' @rdname compute_cadence_bands
 #' @export
 summarize_cadence_bands = function(df,
-                                   group_cols = c("SEQN", "PAXDAYM")) {
+                                   group_cols = c("SEQN", "PAXDAYM")
+                                   ) {
   n_in_cadence_band = n = cadence_band = NULL
   rm(list = c("cadence_band", "n", "n_in_cadence_band"))
   assertthat::assert_that(
@@ -92,6 +95,7 @@ summarise_cadence_bands = summarize_cadence_bands
 #' @param band_summary Data.table with cadence band counts.
 #' @param all_bands Vector of all expected cadence bands.
 #' @return A data.table with all cadence bands present.
+#' @export
 ensure_all_cadence_bands <- function(band_summary, all_bands) {
   for (band in all_bands) {
     if (!(band %in% names(band_summary))) {
