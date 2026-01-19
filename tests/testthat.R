@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(rnhanescadence)
+library(cadence)
 
-test_check("rnhanescadence")
+test_check("cadence")
