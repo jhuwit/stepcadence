@@ -22,7 +22,7 @@ compute_cadence_bands <- function(df,
   #   "All-out"
   # )
   all_bands = c("zero", "incidental", "sporadic", "purposeful", "slow_walk",
-                "medium_walk", "brisk_walk", "fast_walk", "very_fast_walk", "all_out"
+                "medium_walk", "brisk_walk", "all_out"
   )
 
   assertthat::assert_that(
@@ -42,9 +42,10 @@ compute_cadence_bands <- function(df,
     dplyr::mutate(
       cadence_band = cut(
         steps,
-        breaks = c(0, 1, 19, 29, 49, 59, 79, 89, 99, 119, Inf),
+        breaks = c(0, 1, 20, 40, 60, 80, 100, 120, Inf),
         labels = all_bands,
-        include.lowest = TRUE
+        include.lowest = TRUE,
+        right = FALSE
       )
     )
 
