@@ -83,6 +83,8 @@ df = data.frame(
     rep(29, 7),
     rep(30, 5),
     rep(35, 8),    
+    rep(39, 9),
+    rep(40, 9),
     rep(49, 9),
     rep(50, 5),
     rep(55, 10),
