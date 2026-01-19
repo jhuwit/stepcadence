@@ -1,0 +1,112 @@
+---
+title: "calculate_cadence"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{calculate_cadence}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(cadence)
+```
+
+
+# Data
+
+For this example, we will use the `simulated_nhanes_steps` dataset included in the package.
+```{r}
+head(simulated_nhanes_steps)
+```
+## Data Description
+The `simulated_nhanes_steps` dataset contains simulated step count data for individuals, structured similarly to the NHANES accelerometer data. 
+
+For most computations, we will group by the ID (`SEQN`) and the day of measurement (`PAXDAYM`) using the `nhanes_group_cols()` function.
+
+```{r}
+nhanes_group_cols()
+```
+
+# Summarizing Cadence
+
+The overall function for summarizing cadence metrics is `summarize_cadence()`. This function computes various cadence metrics, including mean cadence, peak cadence, and time spent in different cadence levels.  In this code, we will create these summaries by grouping by `SEQN` and `PAXDAYM`.
+
+```{r}
+result <- summarize_cadence(simulated_nhanes_steps, group_cols = nhanes_group_cols())
+head(result)
+colnames(result)
+```
+The columns computed are:
+- `mean_uncensored_cadence`: Mean cadence without censoring based on counts.
+- `mean_censored_cadence`: Mean cadence with censoring based on counts.
+- `peak_1min`: Peak 1-minute cadence.
+- `peak_30min`: Peak 30-minute cadence.
+- `peak_60min`: Peak 30-minute cadence.
+- `n_minutes`: Number of total minutes.
+- `n_minutes_wear`: Number of minutes with wear time.
+- `max_5min` : Maximum 5-minute cadence.
+- `max_10min`: Maximum 10-minute cadence.
+- `max_20min`: Maximum 20-minute cadence.
+- `max_30min`: Maximum 30-minute cadence.
+- `max_60min`: Maximum 60-minute cadence.
+
+Cadence Bands:
+- `zero`: Time spent in zero cadence band.
+- `incidental`: Time spent in incidental cadence band.
+- `sporadic`: Time spent in sporadic cadence band.
+- `purposeful`: Time spent in purposeful cadence band.
+- `slow_walk`: Time spent in slow walking cadence band.
+- `medium_walk`: Time spent in medium walking cadence band.
+- `brisk_walk`: Time spent in brisk walking cadence band.
+- `fast_walk`: Time spent in fast walking cadence band: 90-99 steps/min.
+- `very_fast_walk`: Time spent in very fast walking cadence band: 100-119 steps/min.
+- `all_out`: Time spent in all-out cadence band: 119+ steps/min.
+
+
+```{r}
+library(dplyr)
+df = data.frame(
+  steps = c(
+    rep(0, 2),
+    rep(1, 3),
+    rep(15, 4),
+    rep(19, 5),
+    rep(20, 5),
+    rep(25, 6),
+    rep(29, 7),
+    rep(30, 5),
+    rep(35, 8),    
+    rep(49, 9),
+    rep(50, 5),
+    rep(55, 10),
+    rep(59, 11),
+    rep(60, 5),
+    rep(75, 12),
+    rep(79, 13),
+    rep(80, 5),
+    rep(85, 14),
+    rep(89, 15),
+    rep(90, 5),
+    rep(95, 16),
+    rep(99, 17),
+    rep(100, 5),
+    rep(105, 18),
+    rep(119, 19),
+    rep(125, 20)
+  )
+)
+bands = df %>% 
+  compute_cadence_bands()
+bands %>% count(steps, cadence_band)
+```
+
+
+
+
