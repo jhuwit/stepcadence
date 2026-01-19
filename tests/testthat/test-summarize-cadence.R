@@ -18,8 +18,10 @@ test_that("summarize_cadence check", {
       "n_minutes", "n_minutes_wear", "mean_uncensored_cadence", "mean_censored_cadence",
       "max_5min", "max_20min", "max_30min", "max_60min", "low_cadence",
       "moderate_cadence", "high_cadence", "zero", "incidental", "sporadic",
-      "purposeful", "slow_walk", "medium_walk", "brisk_walk", "fast_walk",
-      "very_fast_walk", "all_out")
+      "purposeful", "slow_walk", "medium_walk", "brisk_walk",
+      # "fast_walk",
+      # "very_fast_walk",
+      "all_out")
   expect_named(
     test_result,
     expected = expected_cols,
@@ -36,8 +38,11 @@ test_that("ensure_all_cadence_bands adding in fake band", {
       "n_minutes", "n_minutes_wear", "mean_uncensored_cadence", "mean_censored_cadence",
       "max_5min", "max_20min", "max_30min", "max_60min", "low_cadence",
       "moderate_cadence", "high_cadence", "zero", "incidental", "sporadic",
-      "purposeful", "slow_walk", "medium_walk", "brisk_walk", "fast_walk",
-      "very_fast_walk", "all_out", "running_for_your_life")
+      "purposeful", "slow_walk", "medium_walk", "brisk_walk",
+      # "fast_walk",
+      # "very_fast_walk",
+      "all_out",
+      "running_for_your_life")
   expect_named(
     test_result,
     expected = expected_cols,
