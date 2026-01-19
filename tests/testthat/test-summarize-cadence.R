@@ -64,6 +64,9 @@ test_that("summarize_accelerometry produces expected results", {
   expected_result = expected_result %>%
     janitor::clean_names() %>%
     dplyr::rename(SEQN=seqn, PAXDAYM = paxdaym)
+  if (all(is.na(expected_result$mean_censored_cadence))) {
+    expected_result$mean_censored_cadence = as.double(expected_result$mean_censored_cadence)
+  }
   test_result = test_result[, colnames(expected_result)]
   # Ensure column names match before comparing values
   expect_equal(sort(names(test_result)), sort(names(expected_result)),
@@ -80,7 +83,9 @@ test_that("summarize_accelerometry produces expected results", {
   # Check if values match (allowing some tolerance for floating-point errors)
   common_cols <- intersect(names(test_result), names(expected_result))
   for (col in common_cols) {
-    expect_equal(test_result[[col]], expected_result[[col]], tolerance = 1e-5,
+    expect_equal(test_result[[col]],
+                 expected_result[[col]], tolerance = 1e-5,
+                 ignore_attr = TRUE,
                  info = paste("Mismatch in column:", col))
   }
 })

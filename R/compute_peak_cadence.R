@@ -212,16 +212,16 @@ compute_cadence_mean <- function(df,
     dplyr::ungroup() %>%
     dplyr::mutate(
       mean_uncensored_cadence = dplyr::if_else(
-        is.infinite(mean_uncensored_cadence),
-        NA, mean_uncensored_cadence),
+        is.nan(mean_uncensored_cadence),
+        NA_real_, mean_uncensored_cadence),
 
       n_minutes_wear = dplyr::if_else(
-        is.infinite(n_minutes_wear),
-        NA, n_minutes_wear),
+        is.nan(n_minutes_wear),
+        NA_real_, n_minutes_wear),
 
       mean_censored_cadence = dplyr::if_else(
-        is.infinite(mean_censored_cadence),
-        NA, mean_censored_cadence)
+        is.nan(mean_censored_cadence),
+        NA_real_, mean_censored_cadence)
     )
 
   return(df)
