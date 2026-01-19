@@ -5,7 +5,7 @@ df = simulated_nhanes_steps %>%
 
 test_that("simulated_nhanes_steps with apply_mask check", {
 
-  test_result <- summarize_cadence(df, mask_wear = TRUE)
+  test_result <- summarize_cadence(df, mask_wear = TRUE, group_cols = nhanes_group_cols())
 
   print("Columns in test_result after function call:")
   print(names(test_result))  # Debugging step
@@ -19,7 +19,7 @@ test_that("simulated_nhanes_steps with apply_mask check", {
       54.6666666666667)
   )
 
-  test_result_nomask <- summarize_cadence(df)
+  test_result_nomask <- summarize_cadence(df, group_cols = nhanes_group_cols())
   testthat::expect_equal(
     test_result_nomask$peak_30min,
     c(200, 200, 200, 200, 200, 200)

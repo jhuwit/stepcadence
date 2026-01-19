@@ -4,7 +4,7 @@
 \alias{compute_cadence_peak}
 \title{Compute Peak Cadence Metrics}
 \usage{
-compute_cadence_peak(df, mask_wear = FALSE, group_cols = c("SEQN", "PAXDAYM"))
+compute_cadence_peak(df, mask_wear = FALSE, group_cols = NULL)
 }
 \arguments{
 \item{df}{A \code{data.frame} of data, which must have the columns of

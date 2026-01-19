@@ -1,11 +1,11 @@
 test_that("validate_steps_data cases are bad", {
 
   # no mask in the data
-  compute_cadence_max(simulated_nhanes_steps, mask_wear = TRUE)
+  compute_cadence_max(simulated_nhanes_steps, mask_wear = TRUE, group_cols = nhanes_group_cols())
 
   # not a data.frame
   testthat::expect_error({
-    compute_cadence_bands(list(steps = simulated_nhanes_steps$steps))
+    compute_cadence_bands(list(steps = simulated_nhanes_steps$steps, group_cols = nhanes_group_cols()))
   }, regexp = "data frame")
 
   # no steps in the data
@@ -19,14 +19,14 @@ test_that("validate_steps_data cases are bad", {
   df = simulated_nhanes_steps %>%
     dplyr::select(-time)
   testthat::expect_error({
-    compute_cadence_peak(df)
+    compute_cadence_peak(df, group_cols = nhanes_group_cols())
   }, "required column")
 
   # steps has NA values
   df = simulated_nhanes_steps %>%
     dplyr::mutate(time = ifelse(dplyr::row_number() == 1, NA, time))
   testthat::expect_error({
-    compute_cadence_peak(df)
+    compute_cadence_peak(df, group_cols = nhanes_group_cols())
   }, "must not contain NA")
 
   # no group_cols (data is mixed by ID)
@@ -41,7 +41,7 @@ test_that("validate_steps_data cases are bad", {
                   time = lubridate::as_date("2000-01-01") + lubridate::as.period(time, unit = "minutes")
     )
   # this may not work yet - need to fix validation
-  compute_cadence_peak(df)
+  compute_cadence_peak(df, group_cols = nhanes_group_cols())
 
 
 })
@@ -54,7 +54,7 @@ test_that("validate_steps_data gives warning if checking minutes but time missin
   # warning you want to check minutes but time is not required
   testthat::expect_warning({
     validate_steps_data(df, check_minute = TRUE,
-                        columns = "steps")
+                        columns = "steps", group_cols = nhanes_group_cols())
   })
 
 })

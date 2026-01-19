@@ -13,7 +13,7 @@ summarize_cadence <- function(df,
                               mask_wear = FALSE,
                               step_thresholds = c(60, 120),
                               counts_threshold = 500,
-                              group_cols = c("SEQN", "PAXDAYM")
+                              group_cols = NULL
 ) {
   peak <- compute_cadence_peak(df,
                                mask_wear = mask_wear,
