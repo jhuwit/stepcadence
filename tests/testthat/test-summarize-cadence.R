@@ -1,6 +1,6 @@
 test_that("simulated_nhanes_steps check", {
 
-  test_result <- summarize_cadence(simulated_nhanes_steps)
+  test_result <- summarize_cadence(simulated_nhanes_steps, group_cols = nhanes_group_cols())
 
   print("Columns in test_result after function call:")
   print(names(test_result))  # Debugging step
@@ -11,7 +11,7 @@ test_that("simulated_nhanes_steps check", {
 
 test_that("summarize_cadence check", {
 
-  test_result <- summarize_cadence(simulated_nhanes_steps)
+  test_result <- summarize_cadence(simulated_nhanes_steps, group_cols = nhanes_group_cols())
 
   expected_cols =
     c("SEQN", "PAXDAYM", "peak_1min", "peak_30min", "peak_60min",
@@ -28,7 +28,7 @@ test_that("summarize_cadence check", {
 
 test_that("ensure_all_cadence_bands adding in fake band", {
 
-  test_result <- summarize_cadence(simulated_nhanes_steps)
+  test_result <- summarize_cadence(simulated_nhanes_steps, group_cols = nhanes_group_cols())
 
   test_result = ensure_all_cadence_bands(test_result, "running_for_your_life")
   expected_cols =
@@ -50,7 +50,7 @@ test_that("summarize_accelerometry produces expected results", {
   expected_data_path <- testthat::test_path("testdata", "expected_cadence_metrics.csv")
 
   # Load and run function
-  test_result <- summarize_cadence(simulated_nhanes_steps)
+  test_result <- summarize_cadence(simulated_nhanes_steps, group_cols = nhanes_group_cols())
 
   # Read expected results
   expected_result <- data.table::fread(expected_data_path)

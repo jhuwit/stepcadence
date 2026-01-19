@@ -62,7 +62,7 @@ compute_cadence_bands <- function(df,
 #' @rdname compute_cadence_bands
 #' @export
 summarize_cadence_bands = function(df,
-                                   group_cols = c("SEQN", "PAXDAYM")
+                                   group_cols = NULL
                                    ) {
   n_in_cadence_band = n = cadence_band = NULL
   rm(list = c("cadence_band", "n", "n_in_cadence_band"))

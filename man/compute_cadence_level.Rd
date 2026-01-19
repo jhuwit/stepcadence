@@ -8,7 +8,7 @@ compute_cadence_level(
   df,
   mask_wear = FALSE,
   step_thresholds = c(60, 120),
-  group_cols = c("SEQN", "PAXDAYM")
+  group_cols = NULL
 )
 }
 \arguments{

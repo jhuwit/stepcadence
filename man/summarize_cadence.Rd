@@ -10,7 +10,7 @@ summarize_cadence(
   mask_wear = FALSE,
   step_thresholds = c(60, 120),
   counts_threshold = 500,
-  group_cols = c("SEQN", "PAXDAYM")
+  group_cols = NULL
 )
 
 summarise_cadence(
@@ -18,7 +18,7 @@ summarise_cadence(
   mask_wear = FALSE,
   step_thresholds = c(60, 120),
   counts_threshold = 500,
-  group_cols = c("SEQN", "PAXDAYM")
+  group_cols = NULL
 )
 }
 \arguments{

@@ -13,7 +13,7 @@
 #' @rdname compute_cadence_peak
 compute_cadence_peak <- function(df,
                                  mask_wear = FALSE,
-                                 group_cols = c("SEQN", "PAXDAYM")
+                                 group_cols = NULL
 ) {
   # issues with no symbol in the environment
   steps = NULL
@@ -57,7 +57,7 @@ compute_cadence_peak <- function(df,
 compute_cadence_level <- function(df,
                                   mask_wear = FALSE,
                                   step_thresholds = c(60, 120),
-                                  group_cols = c("SEQN", "PAXDAYM")
+                                  group_cols = NULL
 ) {
   # issues with no symbol in the environment
   n_in_cadence_band = cadence = n = steps = NULL
@@ -108,7 +108,7 @@ compute_cadence_level <- function(df,
 #' @export
 compute_cadence_max <- function(df,
                                 mask_wear = FALSE,
-                                group_cols = c("SEQN", "PAXDAYM")
+                                group_cols = NULL
 ) {
   # issues with no symbol in the environment
   steps = NULL

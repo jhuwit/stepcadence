@@ -8,9 +8,9 @@
 \usage{
 compute_cadence_bands(df, mask_wear = FALSE)
 
-summarize_cadence_bands(df, group_cols = c("SEQN", "PAXDAYM"))
+summarize_cadence_bands(df, group_cols = NULL)
 
-summarise_cadence_bands(df, group_cols = c("SEQN", "PAXDAYM"))
+summarise_cadence_bands(df, group_cols = NULL)
 }
 \arguments{
 \item{df}{A \code{data.frame} of data, which must have the columns of
