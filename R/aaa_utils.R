@@ -1,6 +1,6 @@
 group_string_cols = function(df, columns) {
   if (length(columns) > 0) {
-    df = df %>%
+    df = df |>
       dplyr::group_by(
         dplyr::across(dplyr::all_of(columns))
       )
@@ -34,9 +34,9 @@ count_by_level = function(df, var, levels, group_cols) {
   indicators = lapply(levels, function(lev) as.integer(x == lev))
   names(indicators) = tmp_names
 
-  out = dplyr::select(df, dplyr::all_of(group_cols)) %>%
-    dplyr::bind_cols(dplyr::as_tibble(indicators)) %>%
-    group_string_cols(group_cols) %>%
+  out = dplyr::select(df, dplyr::all_of(group_cols)) |>
+    dplyr::bind_cols(dplyr::as_tibble(indicators)) |>
+    group_string_cols(group_cols) |>
     dplyr::summarise(
       dplyr::across(dplyr::all_of(tmp_names), ~ sum(.x, na.rm = TRUE)),
       .groups = "drop"
@@ -58,13 +58,6 @@ safe_mean = function(x) {
     return(NA_real_)
   }
   mean(x, na.rm = TRUE)
-}
-
-check_flag = function(x, name) {
-  if (!(is.logical(x) && length(x) == 1L && !is.na(x))) {
-    stop("`", name, "` must be TRUE or FALSE.", call. = FALSE)
-  }
-  invisible(TRUE)
 }
 
 check_step_thresholds = function(step_thresholds) {

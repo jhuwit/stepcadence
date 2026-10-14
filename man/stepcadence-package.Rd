@@ -27,8 +27,8 @@ narrative review. \emph{British Journal of Sports Medicine}. 2018;52:776-788.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/jhuwit/cadence}
-  \item Report bugs at \url{https://github.com/jhuwit/cadence/issues}
+  \item \url{https://github.com/jhuwit/stepcadence}
+  \item Report bugs at \url{https://github.com/jhuwit/stepcadence/issues}
 }
 
 }

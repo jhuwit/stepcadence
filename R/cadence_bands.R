@@ -68,25 +68,28 @@ compute_cadence_bands <- function(df,
                                   ) {
   steps = NULL
   rm(list = c("steps"))
-  check_flag(mask_wear, "mask_wear")
+  assertthat::assert_that(
+    assertthat::is.flag(mask_wear),
+    assertthat::noNA(mask_wear)
+  )
   validate_steps_data(df = df,
                       columns = c("steps"),
                       check_minute = FALSE)
   if (mask_wear) {
-    df = df %>%
+    df = df |>
       mask_nonwear_steps()
   }
   gv = dplyr::group_vars(df)
-  df = df %>%
+  df = df |>
     # ungroup for speed
-    dplyr::ungroup() %>%
+    dplyr::ungroup() |>
     dplyr::mutate(
       cadence_band = cut_cadence_bands(steps)
     )
 
   if (length(gv) > 0) {
     # regroup
-    df = df %>%
+    df = df |>
       dplyr::group_by(
         dplyr::across(dplyr::all_of(gv))
       )
@@ -102,10 +105,8 @@ summarize_cadence_bands = function(df,
                                    ) {
   cadence_band = NULL
   rm(list = c("cadence_band"))
-  if (!is.data.frame(df)) {
-    stop("Input must be a data frame.")
-  }
   assertthat::assert_that(
+    is.data.frame(df),
     assertthat::has_name(df, "cadence_band")
   )
   group_cols = resolve_group_cols(df, group_cols)
@@ -114,7 +115,7 @@ summarize_cadence_bands = function(df,
   if (!is.factor(df$cadence_band)) {
     warning("Cadence bands is not a factor (should be), coercing")
     values = sort(unique(stats::na.omit(df$cadence_band)))
-    df = df %>%
+    df = df |>
       dplyr::mutate(
         cadence_band = factor(cadence_band,
                               levels = union(cadence_band_labels(), values))

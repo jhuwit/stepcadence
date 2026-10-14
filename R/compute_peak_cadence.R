@@ -1,10 +1,11 @@
 # Shared set-up for the summary functions: resolve groups, validate,
 # mask non-wear minutes, and return an ungrouped tibble
 prepare_steps_data = function(df, mask_wear, group_cols) {
-  check_flag(mask_wear, "mask_wear")
-  if (!is.data.frame(df)) {
-    stop("Input must be a data frame.")
-  }
+  assertthat::assert_that(
+    assertthat::is.flag(mask_wear),
+    assertthat::noNA(mask_wear)
+  )
+  assertthat::assert_that(is.data.frame(df))
   group_cols = resolve_group_cols(df, group_cols)
   validate_steps_data(df = df,
                       columns = c("time", "steps", group_cols),
@@ -12,7 +13,7 @@ prepare_steps_data = function(df, mask_wear, group_cols) {
                       group_cols = group_cols)
   df = dplyr::as_tibble(df)
   if (mask_wear) {
-    df = df %>%
+    df = df |>
       mask_nonwear_steps()
   }
   list(df = df, group_cols = group_cols)
@@ -44,8 +45,8 @@ max_rolling = function(x, n) {
 cadence_peak_worker = function(df, group_cols) {
   steps = NULL
   rm(list = c("steps"))
-  df %>%
-    group_string_cols(group_cols) %>%
+  df |>
+    group_string_cols(group_cols) |>
     dplyr::summarise(
       peak_1min = peak_minutes(steps, 1L),
       peak_30min = peak_minutes(steps, 30L),
@@ -58,13 +59,13 @@ cadence_level_worker = function(df, group_cols, step_thresholds) {
   steps = NULL
   rm(list = c("steps"))
   levels = paste0(c("low", "moderate", "high"), "_cadence")
-  df %>%
+  df |>
     dplyr::mutate(
       .cadence_level = cut(steps, breaks = c(0, step_thresholds, Inf),
                            include.lowest = TRUE,
                            right = FALSE,
                            labels = levels)
-    ) %>%
+    ) |>
     count_by_level(var = ".cadence_level",
                    levels = levels,
                    group_cols = group_cols)
@@ -73,8 +74,8 @@ cadence_level_worker = function(df, group_cols, step_thresholds) {
 cadence_max_worker = function(df, group_cols) {
   steps = NULL
   rm(list = c("steps"))
-  df %>%
-    group_string_cols(group_cols) %>%
+  df |>
+    group_string_cols(group_cols) |>
     dplyr::summarise(
       max_5min = max_rolling(steps, 5L),
       max_20min = max_rolling(steps, 20L),
@@ -97,25 +98,25 @@ cadence_mean_worker = function(df, group_cols, counts_threshold) {
     )
     # censored steps count as 0 steps but the minute stays in the denominator;
     # missing (or masked) steps stay missing
-    df = df %>%
+    df = df |>
       dplyr::mutate(
         steps_censored = dplyr::if_else(
           counts < counts_threshold & !is.na(steps),
           0, as.numeric(steps))
       )
   } else {
-    df = df %>%
+    df = df |>
       dplyr::mutate(steps_censored = NA_real_)
   }
   if (has_wear) {
     check_wear(df$wear)
   } else {
-    df = df %>%
+    df = df |>
       dplyr::mutate(wear = NA)
   }
 
-  df = df %>%
-    group_string_cols(group_cols) %>%
+  df = df |>
+    group_string_cols(group_cols) |>
     dplyr::summarise(
       n_minutes = dplyr::n(),
       n_minutes_wear = sum(wear > 0, na.rm = TRUE),
@@ -125,7 +126,7 @@ cadence_mean_worker = function(df, group_cols, counts_threshold) {
       .groups = "drop"
     )
   if (!has_wear) {
-    df = df %>%
+    df = df |>
       dplyr::mutate(n_minutes_wear = NA_integer_)
   }
   df

@@ -2,15 +2,13 @@ validate_steps_data = function(df,
                                columns = c("time", "steps"),
                                check_minute = FALSE,
                                group_cols = NULL) {
-  if (!is.data.frame(df)) {
-    stop("Input must be a data frame.")
-  }
-
+  assertthat::assert_that(is.data.frame(df))
   missing_columns = setdiff(columns, names(df))
-  if (length(missing_columns) > 0) {
-    stop(paste("Missing required columns:",
-               paste(missing_columns, collapse = ", ")))
-  }
+  assertthat::assert_that(
+    length(missing_columns) == 0,
+    msg = paste("Missing required columns:",
+                paste(missing_columns, collapse = ", "))
+  )
 
 
   if ("steps" %in% columns) {
@@ -28,21 +26,22 @@ validate_steps_data = function(df,
       msg = "`time` must be numeric (minutes) or a date-time (POSIXct)."
     )
 
-    if (anyNA(df$time)) {
-      stop("Time values must not contain NA.")
-    }
+    assertthat::assert_that(
+      assertthat::noNA(df$time),
+      msg = "Time values must not contain NA."
+    )
 
     if (length(group_cols) > 0) {
       time = NULL
       rm(list = c("time"))
-      df = df %>%
-        dplyr::ungroup() %>%
+      df = df |>
+        dplyr::ungroup() |>
         dplyr::group_by(
           dplyr::across(dplyr::all_of(group_cols))
-        ) %>%
+        ) |>
         dplyr::mutate(
           time_diff = c(NA, diff(time))
-        ) %>%
+        ) |>
         dplyr::ungroup()
       time_diff = stats::na.omit(df$time_diff)
     } else {
@@ -88,24 +87,22 @@ validate_steps_data = function(df,
 }
 
 check_wear = function(wear) {
-  ok = is.logical(wear) ||
-    (is.numeric(wear) && all(wear %in% c(0, 1) | is.na(wear)))
-  if (!ok) {
-    stop("`wear` must be logical (TRUE = wear) or coded 0/1 (1 = wear).",
-         call. = FALSE)
-  }
-  invisible(TRUE)
+  assertthat::assert_that(
+    is.logical(wear) ||
+      (is.numeric(wear) && all(wear %in% c(0, 1) | is.na(wear))),
+    msg = "`wear` must be logical (TRUE = wear) or coded 0/1 (1 = wear)."
+  )
 }
 
 mask_nonwear_steps = function(df) {
   wear = steps = NULL
   rm(list = c("wear", "steps"))
-  if (!assertthat::has_name(df, "wear")) {
-    stop("`mask_wear = TRUE` requires a `wear` column in `df`.",
-         call. = FALSE)
-  }
+  assertthat::assert_that(
+    assertthat::has_name(df, "wear"),
+    msg = "`mask_wear = TRUE` requires a `wear` column in `df`."
+  )
   check_wear(df$wear)
-  df = df %>%
+  df = df |>
     dplyr::mutate(
       wear = wear > 0,
       steps = dplyr::if_else(wear, as.numeric(steps), NA_real_)

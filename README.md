@@ -5,9 +5,9 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/jhuwit/cadence/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jhuwit/cadence/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/jhuwit/stepcadence/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jhuwit/stepcadence/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/jhuwit/cadence/graph/badge.svg)](https://app.codecov.io/gh/jhuwit/cadence)
+coverage](https://codecov.io/gh/jhuwit/stepcadence/graph/badge.svg)](https://app.codecov.io/gh/jhuwit/stepcadence)
 <!-- badges: end -->
 
 The goal of `stepcadence` is to calculate cadence (steps per minute)
@@ -19,11 +19,11 @@ bands.
 ## Installation
 
 You can install the development version of `stepcadence` from
-[GitHub](https://github.com/jhuwit/cadence) with:
+[GitHub](https://github.com/jhuwit/stepcadence) with:
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("jhuwit/cadence")
+remotes::install_github("jhuwit/stepcadence")
 ```
 
 ## Example

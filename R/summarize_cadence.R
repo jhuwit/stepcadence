@@ -29,8 +29,8 @@ summarize_cadence <- function(df,
   df = x$df
   group_cols = x$group_cols
 
-  bands = df %>%
-    dplyr::mutate(cadence_band = cut_cadence_bands(steps)) %>%
+  bands = df |>
+    dplyr::mutate(cadence_band = cut_cadence_bands(steps)) |>
     count_by_level(var = "cadence_band",
                    levels = cadence_band_labels(),
                    group_cols = group_cols)

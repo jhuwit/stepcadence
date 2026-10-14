@@ -67,9 +67,9 @@ A data frame grouped with `dplyr::group_by()` gives the same result:
 
 ```{r}
 library(dplyr)
-simulated_nhanes_steps %>%
-  group_by(SEQN, PAXDAYM) %>%
-  summarize_cadence() %>%
+simulated_nhanes_steps |>
+  group_by(SEQN, PAXDAYM) |>
+  summarize_cadence() |>
   all.equal(result)
 ```
 
@@ -122,8 +122,8 @@ compute_cadence_bands(df)
 and `summarize_cadence_bands()` counts the minutes in each band:
 
 ```{r}
-simulated_nhanes_steps %>%
-  compute_cadence_bands() %>%
+simulated_nhanes_steps |>
+  compute_cadence_bands() |>
   summarize_cadence_bands(group_cols = nhanes_group_cols())
 ```
 
@@ -137,7 +137,7 @@ divided by wear time, as in Tudor-Locke et al. (2018).
 df = simulated_nhanes_steps
 # pretend the device was not worn for the first 6 hours of each day
 df$wear = df$time > 360
-summarize_cadence(df, mask_wear = TRUE, group_cols = nhanes_group_cols()) %>%
+summarize_cadence(df, mask_wear = TRUE, group_cols = nhanes_group_cols()) |>
   select(SEQN, PAXDAYM, n_minutes, n_minutes_wear, mean_uncensored_cadence,
          peak_30min, zero)
 ```
