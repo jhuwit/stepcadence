@@ -2,7 +2,7 @@
 % Please edit documentation in R/compute_peak_cadence.R
 \name{compute_cadence_level}
 \alias{compute_cadence_level}
-\title{Compute Cadence Peak}
+\title{Compute Time in Cadence Levels}
 \usage{
 compute_cadence_level(
   df,
@@ -12,20 +12,46 @@ compute_cadence_level(
 )
 }
 \arguments{
-\item{df}{A \code{data.frame} of data, which must have the columns of
-\code{time} and \code{steps}.  If \code{group_cols} added, they must be included in the data
-as well.  If \code{mask_wear = TRUE}, the \code{wear} column must also be included, which
-should be a logical indicator of wear (\code{TRUE}) or non-wear (\code{FALSE}) or
-a flag of 0/1}
+\item{df}{A data frame of minute-level data with columns:
+\itemize{
+\item \code{time}: numeric minutes or a date-time (\code{POSIXct}), increasing by
+exactly 1 minute within each group, with no gaps.
+\item \code{steps}: numeric, non-negative steps in that minute.  \code{NA} is allowed
+and treated as a missing minute.
+\item \code{wear} (optional; required if \code{mask_wear = TRUE}): logical (\code{TRUE} =
+worn) or 0/1 (1 = worn).
+\item any columns named in \code{group_cols}.
+}}
 
-\item{mask_wear}{if \code{TRUE}, then steps that are non-wear will be set to \code{NA}.}
+\item{mask_wear}{If \code{TRUE}, steps in non-wear minutes (\code{wear} is
+\code{FALSE}/0) are set to \code{NA} and excluded from all metrics.  Requires a
+\code{wear} column.}
 
-\item{step_thresholds}{a vector of two unique values to define the cadence
-bands for moderate and high.  0 to first threshold is always
-set for low and above the second threshold is always set for high.}
+\item{step_thresholds}{Two different positive numbers (steps/min) that
+split cadence into levels: low is from 0 up to, but not including, the
+lower threshold; moderate is from the lower up to, but not including, the
+upper threshold; and high is the upper threshold or more.  The default,
+\code{c(60, 120)}, gives low < 60, moderate 60-119, and high >= 120.}
 
-\item{group_cols}{columns to group the data by before computing metrics}
+\item{group_cols}{Character vector of columns that identify one unit of
+analysis, such as a participant-day; metrics are computed separately for
+each combination.  The default, \code{NULL}, uses the groups of \code{df} if it was
+grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, and otherwise treats all of \code{df} as a
+single unit.  See \code{\link[=nhanes_group_cols]{nhanes_group_cols()}} for NHANES data.}
+}
+\value{
+A tibble with one row per group, the \code{group_cols}, and integer
+columns \code{low_cadence}, \code{moderate_cadence}, and \code{high_cadence} giving the
+number of minutes at each level.  Minutes with missing steps are not
+counted.
 }
 \description{
-Compute Cadence Peak
+Counts the minutes at low, moderate, and high cadence.
+}
+\examples{
+compute_cadence_level(simulated_nhanes_steps,
+                      group_cols = nhanes_group_cols())
+compute_cadence_level(simulated_nhanes_steps,
+                      step_thresholds = c(30, 100),
+                      group_cols = nhanes_group_cols())
 }

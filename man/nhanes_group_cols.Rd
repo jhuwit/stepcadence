@@ -7,8 +7,16 @@
 nhanes_group_cols()
 }
 \value{
-a character vector
+The character vector \code{c("SEQN", "PAXDAYM")}.
 }
 \description{
-Group Columns for NHANES
+The columns that identify one participant-day in NHANES minute-level
+accelerometer data: \code{SEQN} (respondent sequence number) and \code{PAXDAYM}
+(day of wear).  Pass to \code{group_cols} to compute metrics per
+participant-day.
+}
+\examples{
+nhanes_group_cols()
+compute_cadence_peak(simulated_nhanes_steps,
+                     group_cols = nhanes_group_cols())
 }

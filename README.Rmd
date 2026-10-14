@@ -13,14 +13,43 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Cadence
+# stepcadence
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/jhuwit/rnhanescadence/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jhuwit/rnhanescadence/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/jhuwit/rnhanescadence/graph/badge.svg)](https://app.codecov.io/gh/jhuwit/rnhanescadence)
+[![R-CMD-check](https://github.com/jhuwit/cadence/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jhuwit/cadence/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/jhuwit/cadence/graph/badge.svg)](https://app.codecov.io/gh/jhuwit/cadence)
 <!-- badges: end -->
-  
-The goal of rnhanescadence is to calculate cadence metrics based on step count data.s
 
+The goal of `stepcadence` is to calculate cadence (steps per minute) metrics
+from minute-level step count data, following
+[Tudor-Locke et al. (2018)](https://doi.org/10.1136/bjsports-2017-097628):
+peak and maximum cadence, mean cadence, and time spent in cadence levels and
+bands.
 
+## Installation
 
+You can install the development version of `stepcadence` from
+[GitHub](https://github.com/jhuwit/cadence) with:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("jhuwit/cadence")
+```
+
+## Example
+
+The input is a data frame with one row per minute and `time` and `steps`
+columns.  `summarize_cadence()` computes every metric, here for each
+participant (`SEQN`) and day (`PAXDAYM`):
+
+```{r example}
+library(stepcadence)
+head(simulated_nhanes_steps)
+
+result = summarize_cadence(simulated_nhanes_steps,
+                           group_cols = nhanes_group_cols())
+result
+```
+
+See `vignette("calculate_cadence", package = "stepcadence")` for details on
+each metric, cadence bands, and handling non-wear time.

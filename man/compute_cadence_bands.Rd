@@ -13,19 +13,61 @@ summarize_cadence_bands(df, group_cols = NULL)
 summarise_cadence_bands(df, group_cols = NULL)
 }
 \arguments{
-\item{df}{A \code{data.frame} of data, which must have the columns of
-\code{time} and \code{steps}.  If \code{group_cols} added, they must be included in the data
-as well.  If \code{mask_wear = TRUE}, the \code{wear} column must also be included, which
-should be a logical indicator of wear (\code{TRUE}) or non-wear (\code{FALSE}) or
-a flag of 0/1}
+\item{df}{For \code{compute_cadence_bands()}, a data frame with a numeric
+\code{steps} column (and a \code{wear} column if \code{mask_wear = TRUE}); \code{time} is not
+required.  For \code{summarize_cadence_bands()}, the output of
+\code{compute_cadence_bands()}, i.e. a data frame with a \code{cadence_band} column.}
 
-\item{mask_wear}{if \code{TRUE}, then steps that are non-wear will be set to \code{NA}.}
+\item{mask_wear}{If \code{TRUE}, steps in non-wear minutes (\code{wear} is
+\code{FALSE}/0) are set to \code{NA} and excluded from all metrics.  Requires a
+\code{wear} column.}
 
-\item{group_cols}{columns to group the data by before computing metrics}
+\item{group_cols}{Character vector of columns that identify one unit of
+analysis, such as a participant-day; metrics are computed separately for
+each combination.  The default, \code{NULL}, uses the groups of \code{df} if it was
+grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, and otherwise treats all of \code{df} as a
+single unit.  See \code{\link[=nhanes_group_cols]{nhanes_group_cols()}} for NHANES data.}
 }
 \value{
-A list containing the updated data.table and a summary of cadence bands.
+\itemize{
+\item \code{compute_cadence_bands()}: \code{df} with an added factor column
+\code{cadence_band}.  Any dplyr grouping of \code{df} is kept.  Minutes with
+missing steps (including masked non-wear) have \code{NA} bands.
+\item \code{summarize_cadence_bands()}: a tibble with one row per group, the
+\code{group_cols}, and one integer column per band giving the number of
+minutes in that band.  Minutes with an \code{NA} band are not counted.
+}
 }
 \description{
-Categorizes steps per minute into cadence bands.
+\code{compute_cadence_bands()} assigns each minute to a cadence band
+(steps/min) following Tudor-Locke et al. (2018):\tabular{ll}{
+   Band \tab Steps/min \cr
+   \code{zero} \tab 0 (non-movement) \cr
+   \code{incidental} \tab > 0 to < 20 (1-19) \cr
+   \code{sporadic} \tab 20-39 \cr
+   \code{purposeful} \tab 40-59 \cr
+   \code{slow_walk} \tab 60-79 \cr
+   \code{medium_walk} \tab 80-99 \cr
+   \code{brisk_walk} \tab 100-119 \cr
+   \code{faster_ambulation} \tab 120 or more \cr
+}
+
+
+Non-integer step values are placed in the band whose range contains them
+(e.g. 19.5 is \code{incidental}).
+
+\code{summarize_cadence_bands()} counts the minutes in each band.
+}
+\examples{
+df = data.frame(steps = c(0, 1, 19, 20, 59, 60, 99, 100, 119, 120, 150))
+compute_cadence_bands(df)
+
+bands = compute_cadence_bands(simulated_nhanes_steps)
+summarize_cadence_bands(bands, group_cols = nhanes_group_cols())
+}
+\references{
+Tudor-Locke C, Han H, Aguiar EJ, et al. How fast is fast enough? Walking
+cadence (steps/min) as a practical estimate of intensity in adults: a
+narrative review. \emph{British Journal of Sports Medicine}. 2018;52:776-788.
+\doi{10.1136/bjsports-2017-097628}
 }

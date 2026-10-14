@@ -5,3 +5,5 @@ tests/.DS_Store
 .Rhistory
 pubs
 inst/doc
+/doc/
+/Meta/

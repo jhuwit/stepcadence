@@ -3,7 +3,7 @@
 \name{summarize_cadence}
 \alias{summarize_cadence}
 \alias{summarise_cadence}
-\title{Summarize Step Data}
+\title{Summarize Cadence Metrics}
 \usage{
 summarize_cadence(
   df,
@@ -22,28 +22,50 @@ summarise_cadence(
 )
 }
 \arguments{
-\item{df}{A \code{data.frame} of data, which must have the columns of
-\code{time} and \code{steps}.  If \code{group_cols} added, they must be included in the data
-as well.  If \code{mask_wear = TRUE}, the \code{wear} column must also be included, which
-should be a logical indicator of wear (\code{TRUE}) or non-wear (\code{FALSE}) or
-a flag of 0/1}
+\item{df}{A data frame of minute-level data with columns:
+\itemize{
+\item \code{time}: numeric minutes or a date-time (\code{POSIXct}), increasing by
+exactly 1 minute within each group, with no gaps.
+\item \code{steps}: numeric, non-negative steps in that minute.  \code{NA} is allowed
+and treated as a missing minute.
+\item \code{wear} (optional; required if \code{mask_wear = TRUE}): logical (\code{TRUE} =
+worn) or 0/1 (1 = worn).
+\item any columns named in \code{group_cols}.
+}}
 
-\item{mask_wear}{if \code{TRUE}, then steps that are non-wear will be set to \code{NA}.}
+\item{mask_wear}{If \code{TRUE}, steps in non-wear minutes (\code{wear} is
+\code{FALSE}/0) are set to \code{NA} and excluded from all metrics.  Requires a
+\code{wear} column.}
 
-\item{step_thresholds}{a vector of two unique values to define the cadence
-bands for moderate and high.  0 to first threshold is always
-set for low and above the second threshold is always set for high.}
+\item{step_thresholds}{Two different positive numbers (steps/min) that
+split cadence into levels: low is from 0 up to, but not including, the
+lower threshold; moderate is from the lower up to, but not including, the
+upper threshold; and high is the upper threshold or more.  The default,
+\code{c(60, 120)}, gives low < 60, moderate 60-119, and high >= 120.}
 
-\item{counts_threshold}{Threshold for censoring steps, such that
-steps where counts less than this threshold is not counted.}
+\item{counts_threshold}{Activity counts/min below which a minute's steps
+are censored (set to 0) for \code{mean_censored_cadence}.}
 
-\item{group_cols}{columns to group the data by before computing metrics}
+\item{group_cols}{Character vector of columns that identify one unit of
+analysis, such as a participant-day; metrics are computed separately for
+each combination.  The default, \code{NULL}, uses the groups of \code{df} if it was
+grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, and otherwise treats all of \code{df} as a
+single unit.  See \code{\link[=nhanes_group_cols]{nhanes_group_cols()}} for NHANES data.}
+}
+\value{
+A tibble with one row per group: the \code{group_cols}, followed by
+the columns described in the functions above.
 }
 \description{
-Calls all helper functions to compute cadence metrics and summarize results.
+Computes all cadence metrics, from \code{\link[=compute_cadence_peak]{compute_cadence_peak()}},
+\code{\link[=compute_cadence_mean]{compute_cadence_mean()}}, \code{\link[=compute_cadence_max]{compute_cadence_max()}},
+\code{\link[=compute_cadence_level]{compute_cadence_level()}}, and \code{\link[=summarize_cadence_bands]{summarize_cadence_bands()}}, and joins them
+into one row per group.
 }
 \examples{
-\dontrun{
-summarize_cadence("path/to/file.csv.xz")
-}
+summarize_cadence(simulated_nhanes_steps, group_cols = nhanes_group_cols())
+
+# a single day needs no grouping
+one_day = subset(simulated_nhanes_steps, SEQN == "ID_1" & PAXDAYM == 1)
+summarize_cadence(one_day)
 }
