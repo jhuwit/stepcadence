@@ -11,6 +11,7 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+options(tibble.width = Inf)
 ```
 
 # stepcadence
@@ -20,11 +21,39 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/jhuwit/stepcadence/graph/badge.svg)](https://app.codecov.io/gh/jhuwit/stepcadence)
 <!-- badges: end -->
 
-The goal of `stepcadence` is to calculate cadence (steps per minute) metrics
-from minute-level step count data, following
-[Tudor-Locke et al. (2018)](https://doi.org/10.1136/bjsports-2017-097628):
-peak and maximum cadence, mean cadence, and time spent in cadence levels and
-bands.
+`stepcadence` calculates cadence (steps per minute) metrics from
+minute-level step count data, such as data from wearable devices or the
+National Health and Nutrition Examination Survey (NHANES).  The metrics
+follow
+[Tudor-Locke et al. (2018)](https://doi.org/10.1136/bjsports-2017-097628).
+
+## Overview
+
+Cadence is a simple, interpretable measure of the intensity of walking: about
+100 steps/min corresponds to moderate intensity in adults.  From a day of
+minute-by-minute step counts, `stepcadence` computes:
+
+| Function | Metrics |
+|---|---|
+| `summarize_cadence()` | All of the metrics below, one row per group |
+| `compute_cadence_peak()` | Peak 1-, 30-, and 60-minute cadence: the mean of the highest, *not necessarily consecutive*, minutes |
+| `compute_cadence_max()` | Maximum 5-, 20-, 30-, and 60-minute cadence: the highest mean over *consecutive* minutes |
+| `compute_cadence_mean()` | Uncensored and censored mean cadence, and minutes of wear |
+| `compute_cadence_level()` | Minutes at low, moderate, and high cadence (default cut points 60 and 120 steps/min) |
+| `compute_cadence_bands()`, `summarize_cadence_bands()` | Minutes in each cadence band: 0, 1-19, 20-39, 40-59, 60-79, 80-99, 100-119, and 120+ steps/min.  `zero` is exactly 0; any value above 0, even 0.5, is incidental (see [Individual metrics](#individual-metrics)) |
+
+The input is a data frame with one row per minute and columns:
+
+- `time`: the minute, as a number or a date-time (`POSIXct`), increasing by
+  exactly 1 minute with no gaps;
+- `steps`: the steps taken in that minute (`NA` allowed);
+- `wear` (optional): `TRUE`/1 if the device was worn.  With
+  `mask_wear = TRUE`, non-wear minutes are excluded from every metric;
+- `counts` (optional): activity counts per minute, used for censored mean
+  cadence.
+
+Use `group_cols` (or `dplyr::group_by()`) to compute metrics separately for
+each participant, day, or other unit.
 
 ## Installation
 
@@ -36,20 +65,230 @@ You can install the development version of `stepcadence` from
 remotes::install_github("jhuwit/stepcadence")
 ```
 
-## Example
+## Quick start
 
-The input is a data frame with one row per minute and `time` and `steps`
-columns.  `summarize_cadence()` computes every metric, here for each
-participant (`SEQN`) and day (`PAXDAYM`):
+The package includes `simulated_nhanes_steps`: 3 participants (`SEQN`) with 2
+days (`PAXDAYM`) of 1440 minutes each.
 
-```{r example}
+```{r quick-start}
 library(stepcadence)
 head(simulated_nhanes_steps)
+```
 
+`summarize_cadence()` computes every metric.  Here we compute them for each
+participant-day, using `nhanes_group_cols()` (`SEQN` and `PAXDAYM`):
+
+```{r summarize}
 result = summarize_cadence(simulated_nhanes_steps,
                            group_cols = nhanes_group_cols())
 result
 ```
 
-See `vignette("calculate_cadence", package = "stepcadence")` for details on
-each metric, cadence bands, and handling non-wear time.
+A single day of data needs no grouping:
+
+```{r one-day}
+one_day = subset(simulated_nhanes_steps, SEQN == "ID_1" & PAXDAYM == 1)
+summarize_cadence(one_day)
+```
+
+## Individual metrics
+
+Each group of metrics can also be computed on its own.
+
+**Peak cadence** is the mean of the highest minutes of the day, wherever they
+occur:
+
+```{r peak}
+compute_cadence_peak(one_day)
+```
+
+**Maximum cadence** is the highest mean over *consecutive* minutes.  The two
+differ when the most active minutes are spread out.  In this toy day, the 30
+highest minutes are 100 steps/min, but they occur in two 15-minute walks, so
+the best 30 consecutive minutes average only 50 steps/min:
+
+```{r peak-vs-max}
+walks = data.frame(
+  time = 1:120,
+  steps = c(rep(100, 15), rep(0, 50), rep(100, 15), rep(0, 40))
+)
+compute_cadence_peak(walks)
+compute_cadence_max(walks)
+```
+
+**Mean cadence** is total steps divided by minutes with data.  If activity
+`counts` are available, the censored mean also sets steps to 0 in minutes
+with fewer than `counts_threshold` counts (500 by default).  Here the second
+walk has low counts, so its steps are censored and the censored mean is half
+the uncensored mean:
+
+```{r mean}
+walks$counts = c(rep(1500, 15), rep(0, 50), rep(300, 15), rep(0, 40))
+compute_cadence_mean(walks)
+```
+
+**Cadence bands** label each minute, and `summarize_cadence_bands()` counts
+the minutes in each band:
+
+| Band | Steps/min | Values included |
+|---|---|---|
+| `zero` | 0 | **exactly 0** |
+| `incidental` | 1-19 | above 0 and below 20 |
+| `sporadic` | 20-39 | 20 or more and below 40 |
+| `purposeful` | 40-59 | 40 or more and below 60 |
+| `slow_walk` | 60-79 | 60 or more and below 80 |
+| `medium_walk` | 80-99 | 80 or more and below 100 |
+| `brisk_walk` | 100-119 | 100 or more and below 120 |
+| `faster_ambulation` | 120+ | 120 or more |
+
+Every band except `zero` is a range that includes its lower bound and goes
+up to, but not including, the next band's lower bound, so 19.5 is
+`incidental` and 20 is `sporadic`.  Values are not rounded.
+
+`zero` is different: it is a single value, not a range.  It means no
+movement, so only exactly 0 is `zero`.  Any value above 0, even one below 1
+such as 0.5 or 0.001, counts as movement and is `incidental`.  If your step
+counts can contain tiny non-zero values (for example from imputation or
+averaging) that should count as no movement, round them before computing
+bands.
+
+```{r bands}
+df = data.frame(steps = c(0, 0.001, 0.5, 1, 19.5, 20, 45, 65, 85, 105, 125))
+compute_cadence_bands(df)
+
+compute_cadence_bands(simulated_nhanes_steps) |>
+  summarize_cadence_bands(group_cols = nhanes_group_cols())
+```
+
+Cadence levels (below) do not treat 0 separately: 0 steps/min counts as
+`low_cadence`.
+
+**Cadence levels** count minutes below, between, and above two thresholds,
+for example 100 and 130 steps/min for moderate and vigorous intensity:
+
+```{r levels}
+compute_cadence_level(simulated_nhanes_steps,
+                      step_thresholds = c(100, 130),
+                      group_cols = nhanes_group_cols())
+```
+
+## Example: comparing groups over a week
+
+A typical study has a week of data for many participants, with time when the
+device was not worn.  Here we simulate 7 days for 20 participants: 10 who
+take frequent walks (`"active"`) and 10 who walk less (`"less active"`).
+Each day the device is worn from 7am for 16 hours, except about 1 in 10 days
+when it is worn for only 6 hours.
+
+```{r load-dplyr, message = FALSE, warning = FALSE}
+library(dplyr)
+```
+
+```{r simulate}
+set.seed(20261014)
+
+simulate_day = function(n_bouts, wear_hours = 16) {
+  minute = 1:1440
+  wear = minute > 7 * 60 & minute <= (7 + wear_hours) * 60
+  # mostly still, with some incidental stepping while the device is worn
+  steps = ifelse(wear & runif(1440) < 0.3, rpois(1440, 8), 0)
+  # walks of 5-40 minutes, each at its own cadence
+  for (i in seq_len(n_bouts)) {
+    start = sample(which(wear), 1)
+    idx = start:min(start + sample(5:40, 1) - 1, 1440)
+    steps[idx] = rnorm(length(idx), mean = runif(1, 60, 130), sd = 6)
+  }
+  steps = round(pmax(steps, 0))
+  # activity counts roughly track steps
+  counts = round(steps * runif(1440, 10, 30))
+  data.frame(time = minute, steps = steps, counts = counts, wear = wear)
+}
+
+participants = data.frame(
+  id = sprintf("P%02d", 1:20),
+  group = rep(c("active", "less active"), each = 10)
+)
+minutes = participants |>
+  cross_join(data.frame(day = 1:7)) |>
+  rowwise() |>
+  reframe(
+    id, group, day,
+    simulate_day(
+      n_bouts = rpois(1, if (group == "active") 10 else 4),
+      wear_hours = if (runif(1) < 0.1) 6 else 16
+    )
+  )
+nrow(minutes)
+```
+
+One call computes every metric for each participant-day.  `mask_wear = TRUE`
+removes non-wear minutes, so mean cadence is divided by wear time:
+
+```{r daily}
+daily = summarize_cadence(minutes, mask_wear = TRUE,
+                          group_cols = c("id", "group", "day"))
+daily |>
+  select(id, group, day, n_minutes_wear, mean_uncensored_cadence,
+         peak_30min, max_30min, brisk_walk, faster_ambulation) |>
+  head() |>
+  knitr::kable(digits = 1)
+```
+
+`n_minutes_wear` makes it easy to keep only valid days, here with at least 10
+hours of wear:
+
+```{r valid-days}
+valid = daily |>
+  filter(n_minutes_wear >= 10 * 60)
+c(all_days = nrow(daily), valid_days = nrow(valid))
+```
+
+Average the valid days for each participant, then compare the groups:
+
+```{r compare}
+metrics = c("mean_uncensored_cadence", "mean_censored_cadence",
+            "peak_1min", "peak_30min", "max_30min",
+            "brisk_walk", "faster_ambulation")
+per_person = valid |>
+  group_by(id, group) |>
+  summarise(n_days = n(), across(all_of(metrics), mean), .groups = "drop")
+
+per_person |>
+  group_by(group) |>
+  summarise(n = n(), across(all_of(metrics), mean)) |>
+  knitr::kable(digits = 1)
+```
+
+The active group has higher mean and peak cadence and spends more time at
+brisk (100-119 steps/min) and faster (120+) cadences.
+
+Finally, the average minutes per valid day in each walking cadence band
+(60 steps/min or more), by group:
+
+```{r bands-plot, fig.height = 4, fig.width = 7}
+walking_bands = c("slow_walk", "medium_walk", "brisk_walk",
+                  "faster_ambulation")
+band_minutes = valid |>
+  group_by(group) |>
+  summarise(across(all_of(walking_bands), mean))
+barplot(
+  as.matrix(band_minutes[, walking_bands]),
+  beside = TRUE,
+  names.arg = c("Slow 60-79", "Medium 80-99", "Brisk 100-119",
+                "Faster 120+"),
+  legend.text = band_minutes$group,
+  args.legend = list(x = "topright", bty = "n"),
+  xlab = "Cadence band (steps/min)",
+  ylab = "Minutes per day"
+)
+```
+
+See `vignette("calculate_cadence", package = "stepcadence")` for more
+details on each metric and on handling non-wear time.
+
+## Reference
+
+Tudor-Locke C, Han H, Aguiar EJ, et al. How fast is fast enough? Walking
+cadence (steps/min) as a practical estimate of intensity in adults: a
+narrative review. *British Journal of Sports Medicine*. 2018;52:776-788.
+<https://doi.org/10.1136/bjsports-2017-097628>

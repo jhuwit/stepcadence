@@ -95,9 +95,15 @@ The columns computed are:
   - `low_cadence`: minutes at 0-59 steps/min.
   - `moderate_cadence`: minutes at 60-119 steps/min.
   - `high_cadence`: minutes at 120 or more steps/min.
-- Cadence bands (minutes in each):
-  - `zero`: 0 steps/min (non-movement).
-  - `incidental`: 1-19 steps/min.
+- Cadence bands (minutes in each).  For non-integer steps, every band except
+  `zero` runs from its lower bound up to, but not including, the next band's
+  lower bound, so 19.5 is `incidental` and 20 is `sporadic`.  Cadence levels
+  use the same rule, so 59.5 is `low_cadence`.
+  - `zero`: exactly 0 steps/min (no movement).  Unlike the other bands, this
+    is a single value, not a range.
+  - `incidental`: above 0 and below 20 steps/min (1-19 for whole numbers).
+    Any value above 0, even below 1 such as 0.5, is movement and so is
+    `incidental`, not `zero`.
   - `sporadic`: 20-39 steps/min.
   - `purposeful`: 40-59 steps/min.
   - `slow_walk`: 60-79 steps/min.

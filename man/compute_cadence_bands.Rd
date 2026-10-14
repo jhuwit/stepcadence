@@ -40,21 +40,30 @@ minutes in that band.  Minutes with an \code{NA} band are not counted.
 }
 \description{
 \code{compute_cadence_bands()} assigns each minute to a cadence band
-(steps/min) following Tudor-Locke et al. (2018):\tabular{ll}{
-   Band \tab Steps/min \cr
-   \code{zero} \tab 0 (non-movement) \cr
-   \code{incidental} \tab > 0 to < 20 (1-19) \cr
-   \code{sporadic} \tab 20-39 \cr
-   \code{purposeful} \tab 40-59 \cr
-   \code{slow_walk} \tab 60-79 \cr
-   \code{medium_walk} \tab 80-99 \cr
-   \code{brisk_walk} \tab 100-119 \cr
-   \code{faster_ambulation} \tab 120 or more \cr
+(steps/min) following Tudor-Locke et al. (2018):\tabular{lll}{
+   Band \tab Paper (steps/min) \tab Values included \cr
+   \code{zero} \tab 0 \tab exactly 0 \cr
+   \code{incidental} \tab 1-19 \tab above 0 and below 20 \cr
+   \code{sporadic} \tab 20-39 \tab 20 or more and below 40 \cr
+   \code{purposeful} \tab 40-59 \tab 40 or more and below 60 \cr
+   \code{slow_walk} \tab 60-79 \tab 60 or more and below 80 \cr
+   \code{medium_walk} \tab 80-99 \tab 80 or more and below 100 \cr
+   \code{brisk_walk} \tab 100-119 \tab 100 or more and below 120 \cr
+   \code{faster_ambulation} \tab 120+ \tab 120 or more \cr
 }
 
 
-Non-integer step values are placed in the band whose range contains them
-(e.g. 19.5 is \code{incidental}).
+The paper's bands are whole numbers.  For non-integer step values, every
+band except \code{zero} includes its lower bound and goes up to, but not
+including, the next band's lower bound, so 19.5 is \code{incidental}, and 20
+and 39.5 are \code{sporadic}.  Values are not rounded.
+
+\code{zero} is the exception: it is a single value, not a range.  It means no
+movement, so only exactly 0 is \code{zero}, and any value above 0, even below 1
+(e.g. 0.001, 0.01, or 0.5), counts as movement and is \code{incidental}.  If
+tiny non-zero values (e.g. from imputation or averaging) should count as no
+movement, round \code{steps} before calling \code{compute_cadence_bands()}.
+\code{\link[=compute_cadence_level]{compute_cadence_level()}} does not treat 0 separately: 0 is \code{low_cadence}.
 
 \code{summarize_cadence_bands()} counts the minutes in each band.
 }

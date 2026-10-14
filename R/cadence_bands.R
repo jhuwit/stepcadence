@@ -23,19 +23,28 @@ cut_cadence_bands = function(steps) {
 #' @description `compute_cadence_bands()` assigns each minute to a cadence band
 #' (steps/min) following Tudor-Locke et al. (2018):
 #'
-#' | Band | Steps/min |
-#' |---|---|
-#' | `zero` | 0 (non-movement) |
-#' | `incidental` | > 0 to < 20 (1-19) |
-#' | `sporadic` | 20-39 |
-#' | `purposeful` | 40-59 |
-#' | `slow_walk` | 60-79 |
-#' | `medium_walk` | 80-99 |
-#' | `brisk_walk` | 100-119 |
-#' | `faster_ambulation` | 120 or more |
+#' | Band | Paper (steps/min) | Values included |
+#' |---|---|---|
+#' | `zero` | 0 | exactly 0 |
+#' | `incidental` | 1-19 | above 0 and below 20 |
+#' | `sporadic` | 20-39 | 20 or more and below 40 |
+#' | `purposeful` | 40-59 | 40 or more and below 60 |
+#' | `slow_walk` | 60-79 | 60 or more and below 80 |
+#' | `medium_walk` | 80-99 | 80 or more and below 100 |
+#' | `brisk_walk` | 100-119 | 100 or more and below 120 |
+#' | `faster_ambulation` | 120+ | 120 or more |
 #'
-#' Non-integer step values are placed in the band whose range contains them
-#' (e.g. 19.5 is `incidental`).
+#' The paper's bands are whole numbers.  For non-integer step values, every
+#' band except `zero` includes its lower bound and goes up to, but not
+#' including, the next band's lower bound, so 19.5 is `incidental`, and 20
+#' and 39.5 are `sporadic`.  Values are not rounded.
+#'
+#' `zero` is the exception: it is a single value, not a range.  It means no
+#' movement, so only exactly 0 is `zero`, and any value above 0, even below 1
+#' (e.g. 0.001, 0.01, or 0.5), counts as movement and is `incidental`.  If
+#' tiny non-zero values (e.g. from imputation or averaging) should count as no
+#' movement, round `steps` before calling `compute_cadence_bands()`.
+#' [compute_cadence_level()] does not treat 0 separately: 0 is `low_cadence`.
 #'
 #' `summarize_cadence_bands()` counts the minutes in each band.
 #'

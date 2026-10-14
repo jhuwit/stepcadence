@@ -18,6 +18,17 @@ test_that("cadence band boundaries follow Tudor-Locke et al. (2018)", {
   )
 })
 
+test_that("non-integer steps are not rounded", {
+  df = data.frame(
+    steps = c(0.001, 0.01, 0.5, 19.5, 19.999, 39.5, 59.5, 79.5, 99.5, 119.5)
+  )
+  expect_equal(
+    as.character(compute_cadence_bands(df)$cadence_band),
+    c(rep("incidental", 5), "sporadic", "purposeful", "slow_walk",
+      "medium_walk", "brisk_walk")
+  )
+})
+
 test_that("compute_cadence_bands keeps NA steps as NA bands", {
   result = compute_cadence_bands(data.frame(steps = c(0, NA, 50)))
   expect_equal(as.character(result$cadence_band), c("zero", NA, "purposeful"))
