@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(cadence)
+library(stepcadence)
 
-test_check("cadence")
+test_check("stepcadence")

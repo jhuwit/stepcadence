@@ -7,19 +7,54 @@
 compute_cadence_peak(df, mask_wear = FALSE, group_cols = NULL)
 }
 \arguments{
-\item{df}{A \code{data.frame} of data, which must have the columns of
-\code{time} and \code{steps}.  If \code{group_cols} added, they must be included in the data
-as well.  If \code{mask_wear = TRUE}, the \code{wear} column must also be included, which
-should be a logical indicator of wear (\code{TRUE}) or non-wear (\code{FALSE}) or
-a flag of 0/1}
+\item{df}{A data frame of minute-level data with columns:
+\itemize{
+\item \code{time}: numeric minutes or a date-time (\code{POSIXct}), increasing by
+exactly 1 minute within each group, with no gaps.
+\item \code{steps}: numeric, non-negative steps in that minute.  \code{NA} is allowed
+and treated as a missing minute.
+\item \code{wear} (optional; required if \code{mask_wear = TRUE}): logical (\code{TRUE} =
+worn) or 0/1 (1 = worn).
+\item any columns named in \code{group_cols}.
+}}
 
-\item{mask_wear}{if \code{TRUE}, then steps that are non-wear will be set to \code{NA}.}
+\item{mask_wear}{If \code{TRUE}, steps in non-wear minutes (\code{wear} is
+\code{FALSE}/0) are set to \code{NA} and excluded from all metrics.  Requires a
+\code{wear} column.}
 
-\item{group_cols}{columns to group the data by before computing metrics}
+\item{group_cols}{Character vector of columns that identify one unit of
+analysis, such as a participant-day; metrics are computed separately for
+each combination.  The default, \code{NULL}, uses the groups of \code{df} if it was
+grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, and otherwise treats all of \code{df} as a
+single unit.  See \code{\link[=nhanes_group_cols]{nhanes_group_cols()}} for NHANES data.}
 }
 \value{
-A data.table with peak cadence metrics added.
+A tibble with one row per group, the \code{group_cols}, and:
+\itemize{
+\item \code{peak_1min}: highest steps in a single minute.
+\item \code{peak_30min}, \code{peak_60min}: mean of the 30 or 60 highest minutes.
+}
+
+A metric is \code{NA} if the group has fewer non-missing minutes than its
+window (e.g. fewer than 30 for \code{peak_30min}).
 }
 \description{
-Computes 1-minute, 30-minute, and 60-minute peak cadence metrics.
+Computes peak 1-minute, 30-minute, and 60-minute cadence:
+the mean steps/min of the 1, 30, or 60 highest, but not necessarily
+consecutive, minutes (Tudor-Locke et al., 2018).
+For the highest \emph{consecutive} minutes, see \code{\link[=compute_cadence_max]{compute_cadence_max()}}.
+}
+\examples{
+compute_cadence_peak(simulated_nhanes_steps,
+                     group_cols = nhanes_group_cols())
+
+# a single day needs no grouping
+one_day = subset(simulated_nhanes_steps, SEQN == "ID_1" & PAXDAYM == 1)
+compute_cadence_peak(one_day)
+}
+\references{
+Tudor-Locke C, Han H, Aguiar EJ, et al. How fast is fast enough? Walking
+cadence (steps/min) as a practical estimate of intensity in adults: a
+narrative review. \emph{British Journal of Sports Medicine}. 2018;52:776-788.
+\doi{10.1136/bjsports-2017-097628}
 }

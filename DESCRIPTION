@@ -1,30 +1,36 @@
-Package: cadence
+Package: stepcadence
 Title: Computes Cadence Metrics from Step Count Data
 Version: 0.2.0
-Authors@R: 
-    c(
+Authors@R: c(
     person("Angela", "Zhao", , "azhaowork@gmail.com", role = c("aut", "cre")),
-    person("John", "Muschelli", , "muschellij2@gmail.com", role = c("aut"))
-    )
-Description: Calculates cadence metrics on step-level data.
+    person("John", "Muschelli", , "muschellij2@gmail.com", role = "aut")
+  )
+Description: Computes cadence (steps per minute) metrics from minute-level
+    step count data, such as data from the National Health and Nutrition
+    Examination Survey (NHANES), as described in Tudor-Locke et al. (2018)
+    <doi:10.1136/bjsports-2017-097628>. Metrics include peak 1-, 30-, and
+    60-minute cadence, maximum 5-, 20-, 30-, and 60-minute consecutive
+    cadence, uncensored and censored mean cadence, and time spent in
+    cadence bands and levels, with optional masking of non-wear time.
 License: GPL (>= 3)
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
+URL: https://github.com/jhuwit/stepcadence
+BugReports: https://github.com/jhuwit/stepcadence/issues
+Depends: 
+    R (>= 4.1.0)
+Imports: 
+    assertthat,
+    data.table (>= 1.12.0),
+    dplyr (>= 1.1.0),
+    lubridate
 Suggests: 
-    janitor,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: 
+    knitr
 Config/testthat/edition: 3
-Imports: 
-    assertthat,
-    data.table,
-    dplyr,
-    lubridate,
-    magrittr,
-    tidyr
-Depends: 
-    R (>= 3.5)
+Encoding: UTF-8
+Language: en-US
 LazyData: true
-VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0

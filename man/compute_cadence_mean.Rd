@@ -2,34 +2,65 @@
 % Please edit documentation in R/compute_peak_cadence.R
 \name{compute_cadence_mean}
 \alias{compute_cadence_mean}
-\title{Compute Cadence Mean}
+\title{Compute Mean Cadence}
 \usage{
 compute_cadence_mean(
   df,
   mask_wear = FALSE,
   counts_threshold = 500,
-  group_cols = c("SEQN", "PAXDAYM")
+  group_cols = NULL
 )
 }
 \arguments{
-\item{df}{A \code{data.frame} of data, which must have the columns of
-\code{time} and \code{steps}.  If \code{group_cols} added, they must be included in the data
-as well.  If \code{mask_wear = TRUE}, the \code{wear} column must also be included, which
-should be a logical indicator of wear (\code{TRUE}) or non-wear (\code{FALSE}) or
-a flag of 0/1}
+\item{df}{A data frame as described in \code{\link[=compute_cadence_peak]{compute_cadence_peak()}}.  It may
+also have a \code{counts} column of non-negative activity counts per minute,
+which is needed for the censored mean.}
 
-\item{mask_wear}{if \code{TRUE}, then steps that are non-wear will be set to \code{NA}.}
+\item{mask_wear}{If \code{TRUE}, steps in non-wear minutes (\code{wear} is
+\code{FALSE}/0) are set to \code{NA} and excluded from all metrics.  Requires a
+\code{wear} column.}
 
-\item{counts_threshold}{Threshold for censoring steps, such that
-steps where counts less than this threshold is not counted.}
+\item{counts_threshold}{Activity counts/min below which a minute's steps
+are censored (set to 0) for \code{mean_censored_cadence}.}
 
-\item{group_cols}{columns to group the data by before computing metrics}
+\item{group_cols}{Character vector of columns that identify one unit of
+analysis, such as a participant-day; metrics are computed separately for
+each combination.  The default, \code{NULL}, uses the groups of \code{df} if it was
+grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, and otherwise treats all of \code{df} as a
+single unit.  See \code{\link[=nhanes_group_cols]{nhanes_group_cols()}} for NHANES data.}
+}
+\value{
+A tibble with one row per group, the \code{group_cols}, and:
+\itemize{
+\item \code{n_minutes}: number of rows (minutes).
+\item \code{n_minutes_wear}: number of wear minutes; \code{NA} if \code{df} has no \code{wear}
+column.
+\item \code{n_minutes_valid}: number of minutes with non-missing steps (after
+masking); the denominator of both means.
+\item \code{mean_uncensored_cadence}: mean steps/min.
+\item \code{mean_censored_cadence}: mean steps/min after censoring; \code{NA} if \code{df}
+has no \code{counts} column.  Minutes with missing \code{counts} are excluded.
+}
+
+Means are \code{NA} if there are no minutes with steps.
 }
 \description{
-Compute Cadence Mean
+Computes uncensored and censored mean cadence (steps/min)
+following Tudor-Locke et al. (2018):
+\itemize{
+\item uncensored: total steps divided by the number of minutes with steps;
+\item censored: the same, after setting steps to 0 in minutes where
+activity \code{counts} are below \code{counts_threshold}.
 }
-\note{
-For cadence means using \code{compute_cadence_mean}, the columns
-\code{wear} are necessary and \code{counts} are optional.  If \code{counts}
-not available, then censored means are not reported.
+
+The paper divides by device wear time.  Use \code{mask_wear = TRUE} so that
+non-wear minutes are excluded from both totals and the denominator.
+}
+\examples{
+df = simulated_nhanes_steps
+set.seed(1)
+df$counts = rpois(nrow(df), lambda = 500)
+df$wear = TRUE
+compute_cadence_mean(df, mask_wear = TRUE,
+                     group_cols = nhanes_group_cols())
 }

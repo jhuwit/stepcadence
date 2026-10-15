@@ -1,8 +1,10 @@
 ^LICENSE\.md$
-^cadence\.Rproj$
+^stepcadence\.Rproj$
 ^\.Rproj\.user$
 ^data-raw$
 ^\.github$
 ^README\.Rmd$
 ^pubs$
 ^codecov\.yml$
+^doc$
+^Meta$

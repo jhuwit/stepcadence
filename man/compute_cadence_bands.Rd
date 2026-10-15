@@ -13,19 +13,70 @@ summarize_cadence_bands(df, group_cols = NULL)
 summarise_cadence_bands(df, group_cols = NULL)
 }
 \arguments{
-\item{df}{A \code{data.frame} of data, which must have the columns of
-\code{time} and \code{steps}.  If \code{group_cols} added, they must be included in the data
-as well.  If \code{mask_wear = TRUE}, the \code{wear} column must also be included, which
-should be a logical indicator of wear (\code{TRUE}) or non-wear (\code{FALSE}) or
-a flag of 0/1}
+\item{df}{For \code{compute_cadence_bands()}, a data frame with a numeric
+\code{steps} column (and a \code{wear} column if \code{mask_wear = TRUE}); \code{time} is not
+required.  For \code{summarize_cadence_bands()}, the output of
+\code{compute_cadence_bands()}, i.e. a data frame with a \code{cadence_band} column.}
 
-\item{mask_wear}{if \code{TRUE}, then steps that are non-wear will be set to \code{NA}.}
+\item{mask_wear}{If \code{TRUE}, steps in non-wear minutes (\code{wear} is
+\code{FALSE}/0) are set to \code{NA} and excluded from all metrics.  Requires a
+\code{wear} column.}
 
-\item{group_cols}{columns to group the data by before computing metrics}
+\item{group_cols}{Character vector of columns that identify one unit of
+analysis, such as a participant-day; metrics are computed separately for
+each combination.  The default, \code{NULL}, uses the groups of \code{df} if it was
+grouped with \code{\link[dplyr:group_by]{dplyr::group_by()}}, and otherwise treats all of \code{df} as a
+single unit.  See \code{\link[=nhanes_group_cols]{nhanes_group_cols()}} for NHANES data.}
 }
 \value{
-A list containing the updated data.table and a summary of cadence bands.
+\itemize{
+\item \code{compute_cadence_bands()}: \code{df} with an added factor column
+\code{cadence_band}.  Any dplyr grouping of \code{df} is kept.  Minutes with
+missing steps (including masked non-wear) have \code{NA} bands.
+\item \code{summarize_cadence_bands()}: a tibble with one row per group, the
+\code{group_cols}, and one integer column per band giving the number of
+minutes in that band.  Minutes with an \code{NA} band are not counted.
+}
 }
 \description{
-Categorizes steps per minute into cadence bands.
+\code{compute_cadence_bands()} assigns each minute to a cadence band
+(steps/min) following Tudor-Locke et al. (2018):\tabular{lll}{
+   Band \tab Paper (steps/min) \tab Values included \cr
+   \code{zero} \tab 0 \tab exactly 0 \cr
+   \code{incidental} \tab 1-19 \tab above 0 and below 20 \cr
+   \code{sporadic} \tab 20-39 \tab 20 or more and below 40 \cr
+   \code{purposeful} \tab 40-59 \tab 40 or more and below 60 \cr
+   \code{slow_walk} \tab 60-79 \tab 60 or more and below 80 \cr
+   \code{medium_walk} \tab 80-99 \tab 80 or more and below 100 \cr
+   \code{brisk_walk} \tab 100-119 \tab 100 or more and below 120 \cr
+   \code{faster_ambulation} \tab 120+ \tab 120 or more \cr
+}
+
+
+The paper's bands are whole numbers.  For non-integer step values, every
+band except \code{zero} includes its lower bound and goes up to, but not
+including, the next band's lower bound, so 19.5 is \code{incidental}, and 20
+and 39.5 are \code{sporadic}.  Values are not rounded.
+
+\code{zero} is the exception: it is a single value, not a range.  It means no
+movement, so only exactly 0 is \code{zero}, and any value above 0, even below 1
+(e.g. 0.001, 0.01, or 0.5), counts as movement and is \code{incidental}.  If
+tiny non-zero values (e.g. from imputation or averaging) should count as no
+movement, round \code{steps} before calling \code{compute_cadence_bands()}.
+\code{\link[=compute_cadence_level]{compute_cadence_level()}} does not treat 0 separately: 0 is \code{low_cadence}.
+
+\code{summarize_cadence_bands()} counts the minutes in each band.
+}
+\examples{
+df = data.frame(steps = c(0, 1, 19, 20, 59, 60, 99, 100, 119, 120, 150))
+compute_cadence_bands(df)
+
+bands = compute_cadence_bands(simulated_nhanes_steps)
+summarize_cadence_bands(bands, group_cols = nhanes_group_cols())
+}
+\references{
+Tudor-Locke C, Han H, Aguiar EJ, et al. How fast is fast enough? Walking
+cadence (steps/min) as a practical estimate of intensity in adults: a
+narrative review. \emph{British Journal of Sports Medicine}. 2018;52:776-788.
+\doi{10.1136/bjsports-2017-097628}
 }

@@ -4,16 +4,22 @@
 \alias{ensure_all_cadence_bands}
 \title{Ensure All Cadence Bands Exist}
 \usage{
-ensure_all_cadence_bands(band_summary, all_bands)
+ensure_all_cadence_bands(band_summary, all_bands = cadence_band_labels())
 }
 \arguments{
-\item{band_summary}{Data.table with cadence band counts.}
+\item{band_summary}{A data frame with one column per cadence band.}
 
-\item{all_bands}{Vector of all expected cadence bands.}
+\item{all_bands}{Character vector of the band columns that should exist.
+Defaults to the bands returned by \code{\link[=compute_cadence_bands]{compute_cadence_bands()}}.}
 }
 \value{
-A data.table with all cadence bands present.
+\code{band_summary} with a column of 0s added for each missing band.
 }
 \description{
-Ensures that all cadence bands appear in the output summary.
+Adds a column of zeros for any cadence band missing from a
+summary.  \code{\link[=summarize_cadence_bands]{summarize_cadence_bands()}} already returns every band, so this
+is only needed for summaries built some other way.
+}
+\examples{
+ensure_all_cadence_bands(data.frame(id = 1, zero = 1000, incidental = 20))
 }

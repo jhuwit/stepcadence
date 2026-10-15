@@ -44,5 +44,3 @@ test_data <- rbindlist(test_data_list)
 simulated_nhanes_steps = test_data
 usethis::use_data(simulated_nhanes_steps, overwrite = TRUE)
 
-fname = here::here("tests/testthat/testdata/test_cadence_data.csv.xz")
-readr::write_csv(test_data, file = xzfile(fname))
