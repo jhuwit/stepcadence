@@ -1,9 +1,13 @@
 expected_cols = c(
+  "total_steps", "n_minutes_stepping", "mean_stepping_cadence",
   "peak_1min", "peak_30min", "peak_60min",
   "n_minutes", "n_minutes_wear", "n_minutes_valid",
   "mean_uncensored_cadence", "mean_censored_cadence",
   "max_5min", "max_20min", "max_30min", "max_60min",
   "low_cadence", "moderate_cadence", "high_cadence",
+  "minutes_40plus", "minutes_100plus",
+  "n_bouts", "bout_minutes", "mean_bout_cadence",
+  "n_extended_bouts", "extended_bout_cadence",
   "zero", "incidental", "sporadic", "purposeful", "slow_walk",
   "medium_walk", "brisk_walk", "faster_ambulation"
 )
@@ -12,7 +16,11 @@ test_that("summarize_cadence matches hand-computed values", {
   # Each simulated day is 0 steps except: 30 min at 50, 100, 120, and 200;
   # 5 min at 10, 20, 30, 40, 50; and 5 min at 200, 190, 180, 170, 160.
   # e.g. peak_60min = (31 * 200 + 190 + 180 + 170 + 160 + 25 * 120) / 60 = 165
-  # and mean = 15150 / 1440.  See testdata/expected_cadence_metrics.csv.
+  # and mean = 15150 / 1440.  With levels at 100 and 130: 1345 low, 60
+  # moderate (100, 120), and 35 high (200, plus 200 to 160).  Bouts of 10+
+  # minutes at 100+: the 100, 120, and 200 blocks, mean (3000 + 3600 + 6000)
+  # / 90 = 140.  Extended bouts (2+ minutes at 60+) add the 200-160 block:
+  # (12600 + 900) / 95.  See testdata/expected_cadence_metrics.csv.
   expected = utils::read.csv(
     testthat::test_path("testdata", "expected_cadence_metrics.csv"),
     colClasses = c(n_minutes_wear = "integer",
@@ -63,14 +71,24 @@ test_that("summarize_cadence agrees with the individual functions", {
   gc = nhanes_group_cols()
   result = summarize_cadence(df, mask_wear = TRUE, group_cols = gc,
                              step_thresholds = c(40, 100),
-                             counts_threshold = 450)
+                             counts_threshold = 450,
+                             minutes_above = c(60, 120),
+                             bout_threshold = 110, bout_min_length = 5,
+                             bout_tolerance = 2)
   pieces = list(
+    compute_daily_steps(df, mask_wear = TRUE, group_cols = gc),
     compute_cadence_peak(df, mask_wear = TRUE, group_cols = gc),
     compute_cadence_mean(df, mask_wear = TRUE, group_cols = gc,
                          counts_threshold = 450),
     compute_cadence_max(df, mask_wear = TRUE, group_cols = gc),
     compute_cadence_level(df, mask_wear = TRUE, group_cols = gc,
                           step_thresholds = c(40, 100)),
+    compute_cadence_minutes_above(df, mask_wear = TRUE, group_cols = gc,
+                                  thresholds = c(60, 120)),
+    compute_cadence_bouts(df, mask_wear = TRUE, group_cols = gc,
+                          bout_threshold = 110, bout_min_length = 5,
+                          bout_tolerance = 2),
+    compute_cadence_extended_bout(df, mask_wear = TRUE, group_cols = gc),
     summarize_cadence_bands(compute_cadence_bands(df, mask_wear = TRUE),
                             group_cols = gc)
   )
@@ -109,4 +127,8 @@ test_that("summarize_cadence validates its threshold arguments", {
   expect_error(summarize_cadence(one_day(), counts_threshold = -1),
                "counts_threshold")
   expect_error(summarize_cadence(one_day(), mask_wear = NA), "mask_wear")
+  expect_error(summarize_cadence(one_day(), minutes_above = -1),
+               "thresholds")
+  expect_error(summarize_cadence(one_day(), bout_min_length = 0),
+               "bout_min_length")
 })

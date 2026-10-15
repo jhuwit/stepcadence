@@ -25,10 +25,16 @@ day of minute-by-minute step counts, `stepcadence` computes:
 | Function | Metrics |
 |----|----|
 | `summarize_cadence()` | All of the metrics below, one row per group |
+| `compute_daily_steps()` | Total steps, stepping time (minutes with steps), and mean cadence while stepping |
 | `compute_cadence_peak()` | Peak 1-, 30-, and 60-minute cadence: the mean of the highest, *not necessarily consecutive*, minutes |
 | `compute_cadence_max()` | Maximum 5-, 20-, 30-, and 60-minute cadence: the highest mean over *consecutive* minutes |
 | `compute_cadence_mean()` | Uncensored and censored mean cadence, and minutes of wear |
-| `compute_cadence_level()` | Minutes at low, moderate, and high cadence (default cut points 60 and 120 steps/min) |
+| `compute_cadence_level()` | Minutes at low, moderate, and high cadence (default cut points 100 and 130 steps/min, the CADENCE-Adults moderate and vigorous thresholds) |
+| `compute_cadence_minutes_above()` | Minutes at or above 40 and 100 steps/min (purposeful and moderate-or-higher) |
+| `compute_cadence_bouts()` | Number of, minutes in, and cadence of sustained bouts (default 10+ minutes at 100+ steps/min) |
+| `compute_cadence_extended_bout()` | Extended bout cadence: mean cadence in bouts of 2+ minutes at 60+ steps/min (Saint-Maurice et al., 2020) |
+| `cadence_thresholds()` | Age-specific CADENCE moderate and vigorous thresholds |
+| `step_volume_category()` | Steps/day categories (sedentary to highly active) |
 | `compute_cadence_bands()`, `summarize_cadence_bands()` | Minutes in each cadence band: 0, 1-19, 20-39, 40-59, 60-79, 80-99, 100-119, and 120+ steps/min. `zero` is exactly 0; any value above 0, even 0.5, is incidental (see [Individual metrics](#individual-metrics)) |
 
 The input is a data frame with one row per minute and columns:
@@ -79,47 +85,63 @@ each participant-day, using `nhanes_group_cols()` (`SEQN` and
 result = summarize_cadence(simulated_nhanes_steps,
                            group_cols = nhanes_group_cols())
 result
-#> # A tibble: 6 × 25
-#>   SEQN  PAXDAYM peak_1min peak_30min peak_60min n_minutes n_minutes_wear
-#>   <chr>   <int>     <dbl>      <dbl>      <dbl>     <int>          <int>
-#> 1 ID_1        1       200        200        165      1440             NA
-#> 2 ID_1        2       200        200        165      1440             NA
-#> 3 ID_2        1       200        200        165      1440             NA
-#> 4 ID_2        2       200        200        165      1440             NA
-#> 5 ID_3        1       200        200        165      1440             NA
-#> 6 ID_3        2       200        200        165      1440             NA
-#>   n_minutes_valid mean_uncensored_cadence mean_censored_cadence max_5min
-#>             <int>                   <dbl>                 <dbl>    <dbl>
-#> 1            1440                    10.5                    NA      200
-#> 2            1440                    10.5                    NA      200
-#> 3            1440                    10.5                    NA      200
-#> 4            1440                    10.5                    NA      200
-#> 5            1440                    10.5                    NA      200
-#> 6            1440                    10.5                    NA      200
-#>   max_20min max_30min max_60min low_cadence moderate_cadence high_cadence  zero
-#>       <dbl>     <dbl>     <dbl>       <int>            <int>        <int> <int>
-#> 1       200       200       100        1345               30           65  1310
-#> 2       200       200       100        1345               30           65  1310
-#> 3       200       200       100        1345               30           65  1310
-#> 4       200       200       100        1345               30           65  1310
-#> 5       200       200       100        1345               30           65  1310
-#> 6       200       200       100        1345               30           65  1310
-#>   incidental sporadic purposeful slow_walk medium_walk brisk_walk
-#>        <int>    <int>      <int>     <int>       <int>      <int>
-#> 1          1        2         32         0           0         30
-#> 2          1        2         32         0           0         30
-#> 3          1        2         32         0           0         30
-#> 4          1        2         32         0           0         30
-#> 5          1        2         32         0           0         30
-#> 6          1        2         32         0           0         30
-#>   faster_ambulation
-#>               <int>
-#> 1                65
-#> 2                65
-#> 3                65
-#> 4                65
-#> 5                65
-#> 6                65
+#> # A tibble: 6 × 35
+#>   SEQN  PAXDAYM total_steps n_minutes_stepping mean_stepping_cadence peak_1min
+#>   <chr>   <int>       <dbl>              <int>                 <dbl>     <dbl>
+#> 1 ID_1        1       15150                130                  117.       200
+#> 2 ID_1        2       15150                130                  117.       200
+#> 3 ID_2        1       15150                130                  117.       200
+#> 4 ID_2        2       15150                130                  117.       200
+#> 5 ID_3        1       15150                130                  117.       200
+#> 6 ID_3        2       15150                130                  117.       200
+#>   peak_30min peak_60min n_minutes n_minutes_wear n_minutes_valid
+#>        <dbl>      <dbl>     <int>          <int>           <int>
+#> 1        200        165      1440             NA            1440
+#> 2        200        165      1440             NA            1440
+#> 3        200        165      1440             NA            1440
+#> 4        200        165      1440             NA            1440
+#> 5        200        165      1440             NA            1440
+#> 6        200        165      1440             NA            1440
+#>   mean_uncensored_cadence mean_censored_cadence max_5min max_20min max_30min
+#>                     <dbl>                 <dbl>    <dbl>     <dbl>     <dbl>
+#> 1                    10.5                    NA      200       200       200
+#> 2                    10.5                    NA      200       200       200
+#> 3                    10.5                    NA      200       200       200
+#> 4                    10.5                    NA      200       200       200
+#> 5                    10.5                    NA      200       200       200
+#> 6                    10.5                    NA      200       200       200
+#>   max_60min low_cadence moderate_cadence high_cadence minutes_40plus
+#>       <dbl>       <int>            <int>        <int>          <int>
+#> 1       100        1345               60           35            127
+#> 2       100        1345               60           35            127
+#> 3       100        1345               60           35            127
+#> 4       100        1345               60           35            127
+#> 5       100        1345               60           35            127
+#> 6       100        1345               60           35            127
+#>   minutes_100plus n_bouts bout_minutes mean_bout_cadence n_extended_bouts
+#>             <int>   <int>        <int>             <dbl>            <int>
+#> 1              95       3           90               140                4
+#> 2              95       3           90               140                4
+#> 3              95       3           90               140                4
+#> 4              95       3           90               140                4
+#> 5              95       3           90               140                4
+#> 6              95       3           90               140                4
+#>   extended_bout_cadence  zero incidental sporadic purposeful slow_walk
+#>                   <dbl> <int>      <int>    <int>      <int>     <int>
+#> 1                  142.  1310          1        2         32         0
+#> 2                  142.  1310          1        2         32         0
+#> 3                  142.  1310          1        2         32         0
+#> 4                  142.  1310          1        2         32         0
+#> 5                  142.  1310          1        2         32         0
+#> 6                  142.  1310          1        2         32         0
+#>   medium_walk brisk_walk faster_ambulation
+#>         <int>      <int>             <int>
+#> 1           0         30                65
+#> 2           0         30                65
+#> 3           0         30                65
+#> 4           0         30                65
+#> 5           0         30                65
+#> 6           0         30                65
 ```
 
 A single day of data needs no grouping:
@@ -127,19 +149,28 @@ A single day of data needs no grouping:
 ``` r
 one_day = subset(simulated_nhanes_steps, SEQN == "ID_1" & PAXDAYM == 1)
 summarize_cadence(one_day)
-#> # A tibble: 1 × 23
-#>   peak_1min peak_30min peak_60min n_minutes n_minutes_wear n_minutes_valid
-#>       <dbl>      <dbl>      <dbl>     <int>          <int>           <int>
-#> 1       200        200        165      1440             NA            1440
-#>   mean_uncensored_cadence mean_censored_cadence max_5min max_20min max_30min
-#>                     <dbl>                 <dbl>    <dbl>     <dbl>     <dbl>
-#> 1                    10.5                    NA      200       200       200
-#>   max_60min low_cadence moderate_cadence high_cadence  zero incidental sporadic
-#>       <dbl>       <int>            <int>        <int> <int>      <int>    <int>
-#> 1       100        1345               30           65  1310          1        2
-#>   purposeful slow_walk medium_walk brisk_walk faster_ambulation
-#>        <int>     <int>       <int>      <int>             <int>
-#> 1         32         0           0         30                65
+#> # A tibble: 1 × 33
+#>   total_steps n_minutes_stepping mean_stepping_cadence peak_1min peak_30min
+#>         <dbl>              <int>                 <dbl>     <dbl>      <dbl>
+#> 1       15150                130                  117.       200        200
+#>   peak_60min n_minutes n_minutes_wear n_minutes_valid mean_uncensored_cadence
+#>        <dbl>     <int>          <int>           <int>                   <dbl>
+#> 1        165      1440             NA            1440                    10.5
+#>   mean_censored_cadence max_5min max_20min max_30min max_60min low_cadence
+#>                   <dbl>    <dbl>     <dbl>     <dbl>     <dbl>       <int>
+#> 1                    NA      200       200       200       100        1345
+#>   moderate_cadence high_cadence minutes_40plus minutes_100plus n_bouts
+#>              <int>        <int>          <int>           <int>   <int>
+#> 1               60           35            127              95       3
+#>   bout_minutes mean_bout_cadence n_extended_bouts extended_bout_cadence  zero
+#>          <int>             <dbl>            <int>                 <dbl> <int>
+#> 1           90               140                4                  142.  1310
+#>   incidental sporadic purposeful slow_walk medium_walk brisk_walk
+#>        <int>    <int>      <int>     <int>       <int>      <int>
+#> 1          1        2         32         0           0         30
+#>   faster_ambulation
+#>               <int>
+#> 1                65
 ```
 
 ## Individual metrics
@@ -264,12 +295,12 @@ Cadence levels (below) do not treat 0 separately: 0 steps/min counts as
 `low_cadence`.
 
 **Cadence levels** count minutes below, between, and above two
-thresholds, for example 100 and 130 steps/min for moderate and vigorous
-intensity:
+thresholds, by default 100 and 130 steps/min for moderate and vigorous
+intensity in adults. `cadence_thresholds()` gives the thresholds for
+other ages:
 
 ``` r
 compute_cadence_level(simulated_nhanes_steps,
-                      step_thresholds = c(100, 130),
                       group_cols = nhanes_group_cols())
 #> # A tibble: 6 × 5
 #>   SEQN  PAXDAYM low_cadence moderate_cadence high_cadence
@@ -280,6 +311,26 @@ compute_cadence_level(simulated_nhanes_steps,
 #> 4 ID_2        2        1345               60           35
 #> 5 ID_3        1        1345               60           35
 #> 6 ID_3        2        1345               60           35
+cadence_thresholds(12)
+#> moderate vigorous 
+#>      110      125
+```
+
+**Bouts** are sustained runs at or above a cadence, by default 10 or
+more minutes at 100 or more steps/min:
+
+``` r
+compute_cadence_bouts(simulated_nhanes_steps,
+                      group_cols = nhanes_group_cols())
+#> # A tibble: 6 × 5
+#>   SEQN  PAXDAYM n_bouts bout_minutes mean_bout_cadence
+#>   <chr>   <int>   <int>        <int>             <dbl>
+#> 1 ID_1        1       3           90               140
+#> 2 ID_1        2       3           90               140
+#> 3 ID_2        1       3           90               140
+#> 4 ID_2        2       3           90               140
+#> 5 ID_3        1       3           90               140
+#> 6 ID_3        2       3           90               140
 ```
 
 ## Example: comparing groups over a week
@@ -416,9 +467,49 @@ barplot(
 See `vignette("calculate_cadence", package = "stepcadence")` for more
 details on each metric and on handling non-wear time.
 
-## Reference
+## References
 
 Tudor-Locke C, Han H, Aguiar EJ, et al. How fast is fast enough? Walking
 cadence (steps/min) as a practical estimate of intensity in adults: a
 narrative review. *British Journal of Sports Medicine*. 2018;52:776-788.
 <https://doi.org/10.1136/bjsports-2017-097628>
+
+Saint-Maurice PF, Troiano RP, Bassett DR Jr, et al. Association of daily
+step count and step intensity with mortality among US adults. *JAMA*.
+2020;323(12):1151-1160. <https://doi.org/10.1001/jama.2020.1382>
+
+del Pozo Cruz B, Ahmadi MN, Lee IM, Stamatakis E. Prospective
+associations of daily step counts and intensity with cancer and
+cardiovascular disease incidence and mortality and all-cause mortality.
+*JAMA Internal Medicine*. 2022;182(11):1139-1148.
+<https://doi.org/10.1001/jamainternmed.2022.4000>
+
+Tudor-Locke C, Bassett DR Jr. How many steps/day are enough? Preliminary
+pedometer indices for public health. *Sports Medicine*. 2004;34(1):1-8.
+<https://doi.org/10.2165/00007256-200434010-00001>
+
+Granat M, Clarke C, Holdsworth R, Stansfield B, Dall P. Quantifying the
+cadence of free-living walking using event-based analysis. *Gait &
+Posture*. 2015;42(1):85-90.
+<https://doi.org/10.1016/j.gaitpost.2015.04.012>
+
+Tudor-Locke C, Schuna JM Jr, Han H, et al. Cadence (steps/min) and
+intensity during ambulation in 6-20 year olds: the CADENCE-kids study.
+*International Journal of Behavioral Nutrition and Physical Activity*.
+2018;15:20. <https://doi.org/10.1186/s12966-018-0651-y>
+
+Tudor-Locke C, Aguiar EJ, Han H, et al. Walking cadence (steps/min) and
+intensity in 21-40 year olds: CADENCE-adults. *International Journal of
+Behavioral Nutrition and Physical Activity*. 2019;16:8.
+<https://doi.org/10.1186/s12966-019-0769-6>
+
+Tudor-Locke C, Ducharme SW, Aguiar EJ, et al. Walking cadence
+(steps/min) and intensity in 41 to 60-year-old adults: the
+CADENCE-adults study. *International Journal of Behavioral Nutrition and
+Physical Activity*. 2020;17:137.
+<https://doi.org/10.1186/s12966-020-01045-z>
+
+Tudor-Locke C, Mora-Gonzalez J, Ducharme SW, et al. Walking cadence
+(steps/min) and intensity in 61-85-year-old adults: the CADENCE-Adults
+study. *International Journal of Behavioral Nutrition and Physical
+Activity*. 2021;18:129. <https://doi.org/10.1186/s12966-021-01199-4>

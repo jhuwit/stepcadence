@@ -59,16 +59,22 @@ cadence_level_worker = function(df, group_cols, step_thresholds) {
   steps = NULL
   rm(list = c("steps"))
   levels = paste0(c("low", "moderate", "high"), "_cadence")
-  df |>
+  no_high = is.na(step_thresholds[2])
+  breaks = c(0, stats::na.omit(step_thresholds), Inf)
+  out = df |>
     dplyr::mutate(
-      .cadence_level = cut(steps, breaks = c(0, step_thresholds, Inf),
+      .cadence_level = cut(steps, breaks = breaks,
                            include.lowest = TRUE,
                            right = FALSE,
-                           labels = levels)
+                           labels = levels[seq_len(length(breaks) - 1)])
     ) |>
     count_by_level(var = ".cadence_level",
-                   levels = levels,
+                   levels = levels[seq_len(length(breaks) - 1)],
                    group_cols = group_cols)
+  if (no_high) {
+    out$high_cadence = NA_integer_
+  }
+  out
 }
 
 cadence_max_worker = function(df, group_cols) {
@@ -164,6 +170,10 @@ cadence_mean_worker = function(df, group_cols, counts_threshold) {
 #' cadence (steps/min) as a practical estimate of intensity in adults: a
 #' narrative review. *British Journal of Sports Medicine*. 2018;52:776-788.
 #' \doi{10.1136/bjsports-2017-097628}
+#'
+#' Saint-Maurice PF, Troiano RP, Bassett DR Jr, et al. Association of daily
+#' step count and step intensity with mortality among US adults. *JAMA*.
+#' 2020;323(12):1151-1160. \doi{10.1001/jama.2020.1382}
 #' @export
 #' @rdname compute_cadence_peak
 #' @examples
@@ -189,21 +199,39 @@ compute_cadence_peak <- function(df,
 #' split cadence into levels: low is from 0 up to, but not including, the
 #' lower threshold; moderate is from the lower up to, but not including, the
 #' upper threshold; and high is the upper threshold or more.  The default,
-#' `c(60, 120)`, gives low < 60, moderate 60-119, and high >= 120.
+#' `c(100, 130)`, is the CADENCE-Adults moderate (3 METs) and vigorous (6
+#' METs) intensity thresholds for ages 21-60, giving low (light) < 100,
+#' moderate 100-129, and high (vigorous) >= 130.  See
+#' [cadence_thresholds()] for other ages.  The upper threshold may be `NA`
+#' (as for ages 61-85), in which case `high_cadence` is `NA`.
 #' @return A tibble with one row per group, the `group_cols`, and integer
 #' columns `low_cadence`, `moderate_cadence`, and `high_cadence` giving the
 #' number of minutes at each level.  Minutes with missing steps are not
 #' counted.
+#' @references
+#' Tudor-Locke C, Aguiar EJ, Han H, et al. Walking cadence (steps/min) and
+#' intensity in 21-40 year olds: CADENCE-adults.  *International Journal of
+#' Behavioral Nutrition and Physical Activity*. 2019;16:8.
+#' \doi{10.1186/s12966-019-0769-6}
+#'
+#' Tudor-Locke C, Ducharme SW, Aguiar EJ, et al. Walking cadence
+#' (steps/min) and intensity in 41 to 60-year-old adults: the
+#' CADENCE-adults study.  *International Journal of Behavioral Nutrition and
+#' Physical Activity*. 2020;17:137. \doi{10.1186/s12966-020-01045-z}
 #' @export
 #' @examples
 #' compute_cadence_level(simulated_nhanes_steps,
 #'                       group_cols = nhanes_group_cols())
 #' compute_cadence_level(simulated_nhanes_steps,
-#'                       step_thresholds = c(30, 100),
+#'                       step_thresholds = c(60, 120),
+#'                       group_cols = nhanes_group_cols())
+#' # ages 61-85 have no vigorous threshold
+#' compute_cadence_level(simulated_nhanes_steps,
+#'                       step_thresholds = cadence_thresholds(70),
 #'                       group_cols = nhanes_group_cols())
 compute_cadence_level <- function(df,
                                   mask_wear = FALSE,
-                                  step_thresholds = c(60, 120),
+                                  step_thresholds = c(100, 130),
                                   group_cols = NULL
 ) {
   step_thresholds = check_step_thresholds(step_thresholds)

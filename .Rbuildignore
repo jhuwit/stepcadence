@@ -8,3 +8,6 @@
 ^codecov\.yml$
 ^doc$
 ^Meta$
+^\.Rhistory$
+^\.DS_Store$
+^cran-comments\.md$

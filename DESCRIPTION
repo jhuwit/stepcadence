@@ -2,8 +2,8 @@ Package: stepcadence
 Title: Computes Cadence Metrics from Step Count Data
 Version: 0.2.0
 Authors@R: c(
-    person("Angela", "Zhao", , "azhaowork@gmail.com", role = c("aut", "cre")),
-    person("John", "Muschelli", , "muschellij2@gmail.com", role = "aut")
+    person("John", "Muschelli", , "muschellij2@gmail.com", role = c("aut", "cre")),
+    person("Angela", "Zhao", , "azhaowork@gmail.com", role = "aut")
   )
 Description: Computes cadence (steps per minute) metrics from minute-level
     step count data, such as data from the National Health and Nutrition

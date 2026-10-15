@@ -1,6 +1,6 @@
 test_that("compute_cadence_level boundaries use [0, t1), [t1, t2), [t2, Inf)", {
   df = make_steps(c(0, 59, 59.9, 60, 119, 120, 300))
-  result = compute_cadence_level(df)
+  result = compute_cadence_level(df, step_thresholds = c(60, 120))
   expect_s3_class(result, "tbl_df")
   expect_named(result, c("low_cadence", "moderate_cadence", "high_cadence"))
   expect_equal(unlist(result), c(low_cadence = 3L, moderate_cadence = 2L,
@@ -9,6 +9,11 @@ test_that("compute_cadence_level boundaries use [0, t1), [t1, t2), [t2, Inf)", {
   result = compute_cadence_level(df, step_thresholds = c(30, 100))
   expect_equal(unlist(result), c(low_cadence = 1L, moderate_cadence = 3L,
                                  high_cadence = 3L))
+
+  # default: CADENCE-Adults 100 and 130
+  df = make_steps(c(0, 99, 99.9, 100, 129, 130, 300))
+  expect_equal(unlist(compute_cadence_level(df)),
+               c(low_cadence = 3L, moderate_cadence = 2L, high_cadence = 2L))
 })
 
 test_that("compute_cadence_level sorts thresholds", {
@@ -19,15 +24,17 @@ test_that("compute_cadence_level sorts thresholds", {
 
 test_that("compute_cadence_level rejects bad thresholds", {
   df = make_steps(1:5)
-  for (bad in list(60, c(60, 60), c(0, 60), c(-1, 60), c(60, NA),
-                   c(60, Inf), c("60", "120"), c(30, 60, 90))) {
+  for (bad in list(60, c(60, 60), c(0, 60), c(-1, 60), c(NA, 60),
+                   c(NA_real_, NA_real_), c(60, Inf), c("60", "120"),
+                   c(30, 60, 90))) {
     expect_error(compute_cadence_level(df, step_thresholds = bad),
                  "step_thresholds")
   }
 })
 
 test_that("compute_cadence_level does not count NA steps", {
-  result = compute_cadence_level(make_steps(c(0, NA, 70, NA)))
+  result = compute_cadence_level(make_steps(c(0, NA, 70, NA)),
+                                 step_thresholds = c(60, 120))
   expect_named(result, c("low_cadence", "moderate_cadence", "high_cadence"))
   expect_equal(unlist(result), c(low_cadence = 1L, moderate_cadence = 1L,
                                  high_cadence = 0L))
@@ -36,9 +43,24 @@ test_that("compute_cadence_level does not count NA steps", {
 test_that("compute_cadence_level groups by group_cols or dplyr groups", {
   df = data.frame(id = rep(1:2, each = 3), time = rep(1:3, 2),
                   steps = c(0, 70, 130, 0, 0, 0))
-  result = compute_cadence_level(df, group_cols = "id")
+  result = compute_cadence_level(df, group_cols = "id",
+                                 step_thresholds = c(60, 120))
   expect_equal(result$id, 1:2)
   expect_equal(result$low_cadence, c(1L, 3L))
   expect_equal(result$high_cadence, c(1L, 0L))
-  expect_equal(compute_cadence_level(dplyr::group_by(df, id)), result)
+  expect_equal(compute_cadence_level(dplyr::group_by(df, id),
+                                     step_thresholds = c(60, 120)),
+               result)
+})
+
+test_that("compute_cadence_level allows no upper threshold", {
+  df = make_steps(c(0, 99, 100, 150, 300))
+  result = compute_cadence_level(df, step_thresholds = c(100, NA))
+  expect_named(result, c("low_cadence", "moderate_cadence", "high_cadence"))
+  expect_equal(result$low_cadence, 2L)
+  expect_equal(result$moderate_cadence, 3L)
+  expect_identical(result$high_cadence, NA_integer_)
+  expect_equal(compute_cadence_level(df,
+                                     step_thresholds = cadence_thresholds(70)),
+               result)
 })

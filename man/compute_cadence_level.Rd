@@ -7,7 +7,7 @@
 compute_cadence_level(
   df,
   mask_wear = FALSE,
-  step_thresholds = c(60, 120),
+  step_thresholds = c(100, 130),
   group_cols = NULL
 )
 }
@@ -31,7 +31,11 @@ worn) or 0/1 (1 = worn).
 split cadence into levels: low is from 0 up to, but not including, the
 lower threshold; moderate is from the lower up to, but not including, the
 upper threshold; and high is the upper threshold or more.  The default,
-\code{c(60, 120)}, gives low < 60, moderate 60-119, and high >= 120.}
+\code{c(100, 130)}, is the CADENCE-Adults moderate (3 METs) and vigorous (6
+METs) intensity thresholds for ages 21-60, giving low (light) < 100,
+moderate 100-129, and high (vigorous) >= 130.  See
+\code{\link[=cadence_thresholds]{cadence_thresholds()}} for other ages.  The upper threshold may be \code{NA}
+(as for ages 61-85), in which case \code{high_cadence} is \code{NA}.}
 
 \item{group_cols}{Character vector of columns that identify one unit of
 analysis, such as a participant-day; metrics are computed separately for
@@ -52,6 +56,21 @@ Counts the minutes at low, moderate, and high cadence.
 compute_cadence_level(simulated_nhanes_steps,
                       group_cols = nhanes_group_cols())
 compute_cadence_level(simulated_nhanes_steps,
-                      step_thresholds = c(30, 100),
+                      step_thresholds = c(60, 120),
                       group_cols = nhanes_group_cols())
+# ages 61-85 have no vigorous threshold
+compute_cadence_level(simulated_nhanes_steps,
+                      step_thresholds = cadence_thresholds(70),
+                      group_cols = nhanes_group_cols())
+}
+\references{
+Tudor-Locke C, Aguiar EJ, Han H, et al. Walking cadence (steps/min) and
+intensity in 21-40 year olds: CADENCE-adults.  \emph{International Journal of
+Behavioral Nutrition and Physical Activity}. 2019;16:8.
+\doi{10.1186/s12966-019-0769-6}
+
+Tudor-Locke C, Ducharme SW, Aguiar EJ, et al. Walking cadence
+(steps/min) and intensity in 41 to 60-year-old adults: the
+CADENCE-adults study.  \emph{International Journal of Behavioral Nutrition and
+Physical Activity}. 2020;17:137. \doi{10.1186/s12966-020-01045-z}
 }

@@ -57,4 +57,8 @@ Tudor-Locke C, Han H, Aguiar EJ, et al. How fast is fast enough? Walking
 cadence (steps/min) as a practical estimate of intensity in adults: a
 narrative review. \emph{British Journal of Sports Medicine}. 2018;52:776-788.
 \doi{10.1136/bjsports-2017-097628}
+
+Saint-Maurice PF, Troiano RP, Bassett DR Jr, et al. Association of daily
+step count and step intensity with mortality among US adults. \emph{JAMA}.
+2020;323(12):1151-1160. \doi{10.1001/jama.2020.1382}
 }

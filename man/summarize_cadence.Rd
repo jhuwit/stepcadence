@@ -8,16 +8,24 @@
 summarize_cadence(
   df,
   mask_wear = FALSE,
-  step_thresholds = c(60, 120),
+  step_thresholds = c(100, 130),
   counts_threshold = 500,
+  minutes_above = c(40, 100),
+  bout_threshold = 100,
+  bout_min_length = 10,
+  bout_tolerance = 0,
   group_cols = NULL
 )
 
 summarise_cadence(
   df,
   mask_wear = FALSE,
-  step_thresholds = c(60, 120),
+  step_thresholds = c(100, 130),
   counts_threshold = 500,
+  minutes_above = c(40, 100),
+  bout_threshold = 100,
+  bout_min_length = 10,
+  bout_tolerance = 0,
   group_cols = NULL
 )
 }
@@ -41,10 +49,25 @@ worn) or 0/1 (1 = worn).
 split cadence into levels: low is from 0 up to, but not including, the
 lower threshold; moderate is from the lower up to, but not including, the
 upper threshold; and high is the upper threshold or more.  The default,
-\code{c(60, 120)}, gives low < 60, moderate 60-119, and high >= 120.}
+\code{c(100, 130)}, is the CADENCE-Adults moderate (3 METs) and vigorous (6
+METs) intensity thresholds for ages 21-60, giving low (light) < 100,
+moderate 100-129, and high (vigorous) >= 130.  See
+\code{\link[=cadence_thresholds]{cadence_thresholds()}} for other ages.  The upper threshold may be \code{NA}
+(as for ages 61-85), in which case \code{high_cadence} is \code{NA}.}
 
 \item{counts_threshold}{Activity counts/min below which a minute's steps
 are censored (set to 0) for \code{mean_censored_cadence}.}
+
+\item{minutes_above}{Thresholds (steps/min) passed to
+\code{\link[=compute_cadence_minutes_above]{compute_cadence_minutes_above()}} as \code{thresholds}.}
+
+\item{bout_threshold}{Cadence (steps/min) that each bout minute must
+reach.}
+
+\item{bout_min_length}{Minimum bout length in minutes.}
+
+\item{bout_tolerance}{Longest interruption, in consecutive minutes below
+\code{bout_threshold}, allowed within a bout.}
 
 \item{group_cols}{Character vector of columns that identify one unit of
 analysis, such as a participant-day; metrics are computed separately for
@@ -57,10 +80,12 @@ A tibble with one row per group: the \code{group_cols}, followed by
 the columns described in the functions above.
 }
 \description{
-Computes all cadence metrics, from \code{\link[=compute_cadence_peak]{compute_cadence_peak()}},
-\code{\link[=compute_cadence_mean]{compute_cadence_mean()}}, \code{\link[=compute_cadence_max]{compute_cadence_max()}},
-\code{\link[=compute_cadence_level]{compute_cadence_level()}}, and \code{\link[=summarize_cadence_bands]{summarize_cadence_bands()}}, and joins them
-into one row per group.
+Computes all cadence metrics, from \code{\link[=compute_daily_steps]{compute_daily_steps()}},
+\code{\link[=compute_cadence_peak]{compute_cadence_peak()}}, \code{\link[=compute_cadence_mean]{compute_cadence_mean()}},
+\code{\link[=compute_cadence_max]{compute_cadence_max()}}, \code{\link[=compute_cadence_level]{compute_cadence_level()}},
+\code{\link[=compute_cadence_minutes_above]{compute_cadence_minutes_above()}}, \code{\link[=compute_cadence_bouts]{compute_cadence_bouts()}},
+\code{\link[=compute_cadence_extended_bout]{compute_cadence_extended_bout()}}, and \code{\link[=summarize_cadence_bands]{summarize_cadence_bands()}}, and
+joins them into one row per group.
 }
 \examples{
 summarize_cadence(simulated_nhanes_steps, group_cols = nhanes_group_cols())

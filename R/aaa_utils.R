@@ -61,16 +61,29 @@ safe_mean = function(x) {
 }
 
 check_step_thresholds = function(step_thresholds) {
+  msg = paste0(
+    "`step_thresholds` must be two different, positive, finite numbers, ",
+    "e.g. c(100, 130), or a positive number and NA, e.g. c(100, NA)."
+  )
   assertthat::assert_that(
     is.numeric(step_thresholds),
     length(step_thresholds) == 2L,
+    msg = msg
+  )
+  step_thresholds = unname(step_thresholds)
+  if (is.na(step_thresholds[2])) {
+    assertthat::assert_that(
+      is.finite(step_thresholds[1]),
+      step_thresholds[1] > 0,
+      msg = msg
+    )
+    return(step_thresholds)
+  }
+  assertthat::assert_that(
     all(is.finite(step_thresholds)),
     all(step_thresholds > 0),
     length(unique(step_thresholds)) == 2L,
-    msg = paste0(
-      "`step_thresholds` must be two different, positive, ",
-      "finite numbers, e.g. c(60, 120)."
-    )
+    msg = msg
   )
   sort(step_thresholds)
 }
@@ -84,4 +97,12 @@ check_counts_threshold = function(counts_threshold) {
     msg = "`counts_threshold` must be a single non-negative number."
   )
   invisible(TRUE)
+}
+
+# sum that returns NA (not 0) when there is no non-missing data
+safe_sum = function(x) {
+  if (all(is.na(x))) {
+    return(NA_real_)
+  }
+  sum(x, na.rm = TRUE)
 }
